@@ -1,0 +1,13 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>resources/cppicon.png</file>
+    <file>resources/pyicon.png</file>
+
+    <file>resources/nano.py</file>
+    <file>resources/mini.py</file>
+    <file>resources/raw.py</file>
+    <file>resources/full.py</file>
+
+    <file>resources/modinfo.html</file>
+</qresource>
+</RCC>
