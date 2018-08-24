@@ -3,6 +3,7 @@ JeVois Inventor is a graphical frontend to interact with a JeVois Smart Camera.
 
 See http://jevois.org for more information.
 
+[![JeVois Inventor Youtube Intro](https://img.youtube.com/vi/XVMk8lRvm8k/0.jpg)](https://www.youtube.com/watch?v=XVMk8lRvm8k)
 
 Installation and running
 ------------------------
