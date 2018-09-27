@@ -310,7 +310,7 @@ void Camera::cameraFrame(QVideoFrame const & frame)
 
   // FIXME: compute FPS here
   
-  if (m_signalframe) { QTimer::singleShot(0, m_inventor, &JeVoisInventor::newCameraFrame); m_signalframe = false; }
+  if (m_signalframe) { QTimer::singleShot(0, m_inventor, &JeVoisInventor::newCameraFrame); /*m_signalframe = false;*/ }
 
   if (m_camera && m_camera->status() == QCamera::ActiveStatus) m_tout.start(3456);
 }

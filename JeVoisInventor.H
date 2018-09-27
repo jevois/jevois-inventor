@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <chrono>
+
 #include "Config.H"
 
 #include <QMainWindow>
@@ -145,4 +147,7 @@ class JeVoisInventor : public QMainWindow
     bool proceedDiscardAnyEdits();
     
     int m_jvmajor, m_jvminor, m_jvpatch; // Version of JeVois running on the camera
+    int m_fpsn;
+    std::chrono::time_point<std::chrono::high_resolution_clock> m_fpsstart;
+    QString m_statusstr;
 };

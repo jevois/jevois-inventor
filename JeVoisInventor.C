@@ -76,7 +76,9 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
     m_currmapping(defmap),
     m_jvmajor(1),
     m_jvminor(0),
-    m_jvpatch(0)
+    m_jvpatch(0),
+    m_fpsn(0),
+    m_fpsstart(std::chrono::high_resolution_clock::now())
 {
   DEBU("Start...");
   // Create a toolbar:
@@ -415,388 +417,388 @@ namespace
   {
     public:
       NewModulePage(JeVoisInventor * inv, QList<VideoMapping> const & vm, QWidget * parent = nullptr) :
-	  QWizardPage(parent), m_inv(inv), m_vm(vm)
+          QWizardPage(parent), m_inv(inv), m_vm(vm)
       {
-	setTitle(tr("Module Details"));
-	setSubTitle(tr("Please fill all fields. Hover your mouse over each field for some tips about it."));
-	
-	QGridLayout * lay = new QGridLayout;
-	int idx = 0;
-
-	// ---------- Module name --------------------------------------------------
-	lay->addWidget(new QLabel(tr("Module Name:")), idx, 0);
-	QLineEdit * nameLineEdit = new QLineEdit;
-	nameLineEdit->setValidator(new QRegExpValidator(QRegExp("[A-Z][A-Za-z0-9_]*"), nameLineEdit));
-	nameLineEdit->setPlaceholderText("MyModule");
-	nameLineEdit->
-	  setToolTip(splitToolTip(tr("Module name must start with an uppercase letter, then any combination of "
-				     "letters, numbers, or the underscore symbol. It is the name of the Python "
-				     "or C++ class that will be created for the module.")));
-	lay->addWidget(nameLineEdit, idx, 1);
-	registerField("name*", nameLineEdit);
-	++idx;
-
-	// ---------- Module vendor --------------------------------------------------
-	lay->addWidget(new QLabel(tr("Module Vendor:")), idx, 0);
-	QLineEdit * vendorLineEdit = new QLineEdit;
-	vendorLineEdit->setValidator(new QRegExpValidator(QRegExp("[A-Z][A-Za-z0-9_]*"), vendorLineEdit));
-	vendorLineEdit->setPlaceholderText("ExampleVendor");
-	vendorLineEdit->
-	  setToolTip(splitToolTip(tr("Module vendor must start with an uppercase letter, then any "
-				     "combination of letters, numbers, or the underscore symbol. It is "
-				     "the name of the parent directory that will be created for your "
-				     "module. It is used to help organize modules by their creators.")));
-	lay->addWidget(vendorLineEdit, idx, 1);
-	registerField("vendor*", vendorLineEdit);
-	++idx;
-
-	// ---------- Module synopsis --------------------------------------------------
-	lay->addWidget(new QLabel(tr("Module Synopsis:")), idx, 0);
-	QLineEdit * synoLineEdit = new QLineEdit;
-	synoLineEdit->setPlaceholderText("Detect Objects of type X");
-	synoLineEdit->
-	  setToolTip(splitToolTip(tr("A short one-liner description of what the module does.")));
-	lay->addWidget(synoLineEdit, idx, 1);
-	registerField("syno*", synoLineEdit);
-	++idx;
-
-	// ---------- Module author --------------------------------------------------
-	lay->addWidget(new QLabel(tr("Module Author:")), idx, 0);
-	QLineEdit * authorLineEdit = new QLineEdit;
-	authorLineEdit->setPlaceholderText("John Smith");
-	authorLineEdit->
-	  setToolTip(splitToolTip(tr("Your name. Used by the module title page of JeVois Inventor.")));
-	lay->addWidget(authorLineEdit, idx, 1);
-	registerField("author", authorLineEdit);
-	++idx;
-	
-	// ---------- Module email --------------------------------------------------
-	lay->addWidget(new QLabel(tr("Author Email:")), idx, 0);
-	QLineEdit * emailLineEdit = new QLineEdit;
-	emailLineEdit->setPlaceholderText("you@yourcompany.com");
-	emailLineEdit->
-	  setToolTip(splitToolTip(tr("Your email address. Used by the module title page of JeVois Inventor.")));
-	QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
-			      QRegularExpression::CaseInsensitiveOption);
-	emailLineEdit->setValidator(new QRegularExpressionValidator(rx, this));
-	lay->addWidget(emailLineEdit, idx, 1);
-	registerField("email", emailLineEdit);
-	++idx;
-	
-	// ---------- Module website --------------------------------------------------
-	lay->addWidget(new QLabel(tr("Module Website:")), idx, 0);
-	QLineEdit * websiteLineEdit = new QLineEdit;
-	websiteLineEdit->setPlaceholderText("http://yourcompany.com");
-	websiteLineEdit->
-	  setToolTip(splitToolTip(tr("Your website address. Used by the module title page of JeVois Inventor.")));
-	// FIXME need a validator
-	lay->addWidget(websiteLineEdit, idx, 1);
-	registerField("website", websiteLineEdit);
-	++idx;
-	
-	// ---------- Module license --------------------------------------------------
-	lay->addWidget(new QLabel(tr("Module License:")), idx, 0);
-	QLineEdit * licenseLineEdit = new QLineEdit;
-	licenseLineEdit->setPlaceholderText("GPL v3");
-	licenseLineEdit->
-	  setToolTip(splitToolTip(tr("License terms for your module. Used by the module title "
-				     "page of JeVois Inventor.")));
-	// FIXME need a validator
-	lay->addWidget(licenseLineEdit, idx, 1);
-	registerField("license", licenseLineEdit);
-	++idx;
-	
-	// ---------- Module icon --------------------------------------------------
-	lay->addWidget(new QLabel(tr("Module Icon:")), idx, 0);
-	QPushButton * iconButton = new QPushButton(tr("Change Icon"));
-	iconButton->setToolTip(splitToolTip(tr("Icon should be a 128x128 square image.")));
-	connect(iconButton, &QPushButton::clicked, [&]() {
-	    QStringList locs = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation);
-	    QString loc = locs.isEmpty() ? "" : locs[0];
-
-	    QString const fname = QFileDialog::getOpenFileName
-	      (this, "Select icon file to load", loc,
-	       tr("Image Files (*.png *.jpg *.jpeg *.bmp * .tif)"));
-
-	    m_icon.load(fname);
-	    setPixmap(QWizard::LogoPixmap, m_icon.scaled(64, 64, Qt::KeepAspectRatio));
-	  });
-
-	lay->addWidget(iconButton, idx, 1);
-	++idx;
-	
-	// ---------- Output format --------------------------------------------------
-	QGroupBox * ofmtGB = new QGroupBox(tr("USB output video format"));
-	QHBoxLayout  * ohlay = new QHBoxLayout;
-	
-	QComboBox * ofmtBox = new QComboBox;
-	ofmtBox->addItem("YUYV");
-	ofmtBox->addItem("GREY");
-	ofmtBox->addItem("MJPG");
-	ofmtBox->addItem("BAYER");
-	ofmtBox->addItem("RGB565");
-	ofmtBox->addItem("BGR24");
-	ofmtBox->addItem("NONE");
-	ofmtBox->setCurrentIndex(0);
-	ofmtBox->setEnabled(false);
-	ofmtBox->
-	  setToolTip(splitToolTip(tr("Although JeVois supports many different output pixel formats, for now "
-				     "only YUYV is supported by JeVois Inventor.")));
-	registerField("ofmt", ofmtBox, "currentText", "currentTextChanged");
-	ohlay->addWidget(ofmtBox);
-	
-	QLineEdit * owLineEdit = new QLineEdit;
-	owLineEdit->setValidator(new QIntValidator(8, 4096, owLineEdit));
-	owLineEdit->
-	  setToolTip(splitToolTip(tr("Width in pixels of the video that will be output by JeVois and sent to the "
-				     "host computer over USB. Valid values are integers from 8 to 4096. Beware "
-				     "that values which are not multiple of 8 may not work with many video "
-				     "capture software, including JeVois Inventor on some Mac.")));
-	owLineEdit->setPlaceholderText("320");
-	registerField("ow*", owLineEdit);
-	ohlay->addWidget(owLineEdit);
-	
-	ohlay->addWidget(new QLabel("x"));
-	
-	QLineEdit * ohLineEdit = new QLineEdit;
-	ohLineEdit->setValidator(new QIntValidator(8, 4096, ohLineEdit));
-	ohLineEdit->
-	  setToolTip(splitToolTip(tr("Height in pixels of the video that will be output by JeVois and sent to the "
-				     "host computer over USB. Valid values are integers from 8 to 4096.")));
-	ohLineEdit->setPlaceholderText("240");
-	registerField("oh*", ohLineEdit);
-	ohlay->addWidget(ohLineEdit);
-	
-	ohlay->addWidget(new QLabel("@"));
-	
-	QLineEdit * ofLineEdit = new QLineEdit;
-	ofLineEdit->setValidator(new QDoubleValidator(0.1, 1200.0, 1, ofLineEdit));
-	ofLineEdit->setPlaceholderText("30.0");
-	ofLineEdit->setFixedWidth(60);
-	ofLineEdit->
-	  setToolTip(splitToolTip(tr("Framerate for the video sent to the host computer over USB. In most cases, "
-				     "this should match the camera sensor framerate chosen below.")));
-	registerField("of*", ofLineEdit);
-	ohlay->addWidget(ofLineEdit);
-	
-	ohlay->addWidget(new QLabel("fps"));
-	
-	ofmtGB->setLayout(ohlay);
-	lay->addWidget(ofmtGB, idx, 0, 1, 2);
-	++idx;
-	
-	// ---------- Camera format --------------------------------------------------
-	QGroupBox * cfmtGB = new QGroupBox(tr("Camera sensor video format"));
-	QHBoxLayout  * chlay = new QHBoxLayout;
-	
-	QComboBox * cfmtBox = new QComboBox;
-	cfmtBox->addItem("YUYV");
-	cfmtBox->addItem("BAYER");
-	cfmtBox->addItem("RGB565");
-	cfmtBox->setCurrentIndex(0);
-	cfmtBox->
-	  setToolTip(splitToolTip(tr("Pixel format for images captured by the camera sensor. YUYV is the most "
-				     "common choice.")));
-	registerField("cfmt", cfmtBox, "currentText", "currentTextChanged");
-	chlay->addWidget(cfmtBox);
-	
-	QComboBox * cresBox = new QComboBox;
-	cresBox->addItem("1280 x 1024");
-	cresBox->addItem("640 x 480");
-	cresBox->addItem("352 x 288");
-	cresBox->addItem("320 x 240");
-	cresBox->addItem("176 x 144");
-	cresBox->addItem("160 x 120");
-	cresBox->addItem("88 x 72");
-	cresBox->setCurrentIndex(3);
-	cresBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-	cresBox->
-	  setToolTip(splitToolTip(tr("Video resolution captured by the camera sensor.")));
-	registerField("cres", cresBox, "currentText", "currentTextChanged");
-	chlay->addWidget(cresBox);
-	
-	chlay->addWidget(new QLabel("@"));
-	
-	QLineEdit * cfLineEdit = new QLineEdit;
-	cfLineEdit->setValidator(new QDoubleValidator(0.1, 60.0, 1, cfLineEdit));
-	cfLineEdit->setPlaceholderText("30.0");
-	cfLineEdit->setFixedWidth(60);
-	cfLineEdit->
-	  setToolTip(splitToolTip(tr("Framerate for the camera sensor. Maximum allowed frame rates for each "
-                                 "camera sensor resolution are: 15fps for 1280x1024, 30fps for 640x480, "
-                                 "60fps for 352x288, 320x240, and 160x120, and 120fps for 176x144 "
-                                 "and 88x72.")));
-	registerField("cf*", cfLineEdit);
-	chlay->addWidget(cfLineEdit);
-    
-	connect(cresBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [cfLineEdit](int idx)
-            {
-              switch (idx)
+        setTitle(tr("Module Details"));
+        setSubTitle(tr("Please fill all fields. Hover your mouse over each field for some tips about it."));
+        
+        QGridLayout * lay = new QGridLayout;
+        int idx = 0;
+        
+        // ---------- Module name --------------------------------------------------
+        lay->addWidget(new QLabel(tr("Module Name:")), idx, 0);
+        QLineEdit * nameLineEdit = new QLineEdit;
+        nameLineEdit->setValidator(new QRegExpValidator(QRegExp("[A-Z][A-Za-z0-9_]*"), nameLineEdit));
+        nameLineEdit->setPlaceholderText("MyModule");
+        nameLineEdit->
+          setToolTip(splitToolTip(tr("Module name must start with an uppercase letter, then any combination of "
+                                     "letters, numbers, or the underscore symbol. It is the name of the Python "
+                                     "or C++ class that will be created for the module.")));
+        lay->addWidget(nameLineEdit, idx, 1);
+        registerField("name*", nameLineEdit);
+        ++idx;
+        
+        // ---------- Module vendor --------------------------------------------------
+        lay->addWidget(new QLabel(tr("Module Vendor:")), idx, 0);
+        QLineEdit * vendorLineEdit = new QLineEdit;
+        vendorLineEdit->setValidator(new QRegExpValidator(QRegExp("[A-Z][A-Za-z0-9_]*"), vendorLineEdit));
+        vendorLineEdit->setPlaceholderText("ExampleVendor");
+        vendorLineEdit->
+          setToolTip(splitToolTip(tr("Module vendor must start with an uppercase letter, then any "
+                                     "combination of letters, numbers, or the underscore symbol. It is "
+                                     "the name of the parent directory that will be created for your "
+                                     "module. It is used to help organize modules by their creators.")));
+        lay->addWidget(vendorLineEdit, idx, 1);
+        registerField("vendor*", vendorLineEdit);
+        ++idx;
+        
+        // ---------- Module synopsis --------------------------------------------------
+        lay->addWidget(new QLabel(tr("Module Synopsis:")), idx, 0);
+        QLineEdit * synoLineEdit = new QLineEdit;
+        synoLineEdit->setPlaceholderText("Detect Objects of type X");
+        synoLineEdit->
+          setToolTip(splitToolTip(tr("A short one-liner description of what the module does.")));
+        lay->addWidget(synoLineEdit, idx, 1);
+        registerField("syno*", synoLineEdit);
+        ++idx;
+        
+        // ---------- Module author --------------------------------------------------
+        lay->addWidget(new QLabel(tr("Module Author:")), idx, 0);
+        QLineEdit * authorLineEdit = new QLineEdit;
+        authorLineEdit->setPlaceholderText("John Smith");
+        authorLineEdit->
+          setToolTip(splitToolTip(tr("Your name. Used by the module title page of JeVois Inventor.")));
+        lay->addWidget(authorLineEdit, idx, 1);
+        registerField("author", authorLineEdit);
+        ++idx;
+        
+        // ---------- Module email --------------------------------------------------
+        lay->addWidget(new QLabel(tr("Author Email:")), idx, 0);
+        QLineEdit * emailLineEdit = new QLineEdit;
+        emailLineEdit->setPlaceholderText("you@yourcompany.com");
+        emailLineEdit->
+          setToolTip(splitToolTip(tr("Your email address. Used by the module title page of JeVois Inventor.")));
+        QRegularExpression rx("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b",
+                              QRegularExpression::CaseInsensitiveOption);
+        emailLineEdit->setValidator(new QRegularExpressionValidator(rx, this));
+        lay->addWidget(emailLineEdit, idx, 1);
+        registerField("email", emailLineEdit);
+        ++idx;
+        
+        // ---------- Module website --------------------------------------------------
+        lay->addWidget(new QLabel(tr("Module Website:")), idx, 0);
+        QLineEdit * websiteLineEdit = new QLineEdit;
+        websiteLineEdit->setPlaceholderText("http://yourcompany.com");
+        websiteLineEdit->
+          setToolTip(splitToolTip(tr("Your website address. Used by the module title page of JeVois Inventor.")));
+        // FIXME need a validator
+        lay->addWidget(websiteLineEdit, idx, 1);
+        registerField("website", websiteLineEdit);
+        ++idx;
+        
+        // ---------- Module license --------------------------------------------------
+        lay->addWidget(new QLabel(tr("Module License:")), idx, 0);
+        QLineEdit * licenseLineEdit = new QLineEdit;
+        licenseLineEdit->setPlaceholderText("GPL v3");
+        licenseLineEdit->
+          setToolTip(splitToolTip(tr("License terms for your module. Used by the module title "
+                                     "page of JeVois Inventor.")));
+        // FIXME need a validator
+        lay->addWidget(licenseLineEdit, idx, 1);
+        registerField("license", licenseLineEdit);
+        ++idx;
+        
+        // ---------- Module icon --------------------------------------------------
+        lay->addWidget(new QLabel(tr("Module Icon:")), idx, 0);
+        QPushButton * iconButton = new QPushButton(tr("Change Icon"));
+        iconButton->setToolTip(splitToolTip(tr("Icon should be a 128x128 square image.")));
+        connect(iconButton, &QPushButton::clicked, [&]() {
+            QStringList locs = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation);
+            QString loc = locs.isEmpty() ? "" : locs[0];
+            
+            QString const fname = QFileDialog::getOpenFileName
+              (this, "Select icon file to load", loc,
+               tr("Image Files (*.png *.jpg *.jpeg *.bmp * .tif)"));
+            
+            m_icon.load(fname);
+            setPixmap(QWizard::LogoPixmap, m_icon.scaled(64, 64, Qt::KeepAspectRatio));
+          });
+        
+        lay->addWidget(iconButton, idx, 1);
+        ++idx;
+        
+        // ---------- Output format --------------------------------------------------
+        QGroupBox * ofmtGB = new QGroupBox(tr("USB output video format"));
+        QHBoxLayout  * ohlay = new QHBoxLayout;
+        
+        QComboBox * ofmtBox = new QComboBox;
+        ofmtBox->addItem("YUYV");
+        ofmtBox->addItem("GREY");
+        ofmtBox->addItem("MJPG");
+        ofmtBox->addItem("BAYER");
+        ofmtBox->addItem("RGB565");
+        ofmtBox->addItem("BGR24");
+        ofmtBox->addItem("NONE");
+        ofmtBox->setCurrentIndex(0);
+        ofmtBox->setEnabled(false);
+        ofmtBox->
+          setToolTip(splitToolTip(tr("Although JeVois supports many different output pixel formats, for now "
+                                     "only YUYV is supported by JeVois Inventor.")));
+        registerField("ofmt", ofmtBox, "currentText", "currentTextChanged");
+        ohlay->addWidget(ofmtBox);
+        
+        QLineEdit * owLineEdit = new QLineEdit;
+        owLineEdit->setValidator(new QIntValidator(8, 4096, owLineEdit));
+        owLineEdit->
+          setToolTip(splitToolTip(tr("Width in pixels of the video that will be output by JeVois and sent to the "
+                                     "host computer over USB. Valid values are integers from 8 to 4096. Beware "
+                                     "that values which are not multiple of 8 may not work with many video "
+                                     "capture software, including JeVois Inventor on some Mac.")));
+        owLineEdit->setPlaceholderText("320");
+        registerField("ow*", owLineEdit);
+        ohlay->addWidget(owLineEdit);
+        
+        ohlay->addWidget(new QLabel("x"));
+        
+        QLineEdit * ohLineEdit = new QLineEdit;
+        ohLineEdit->setValidator(new QIntValidator(8, 4096, ohLineEdit));
+        ohLineEdit->
+          setToolTip(splitToolTip(tr("Height in pixels of the video that will be output by JeVois and sent to the "
+                                     "host computer over USB. Valid values are integers from 8 to 4096.")));
+        ohLineEdit->setPlaceholderText("240");
+        registerField("oh*", ohLineEdit);
+        ohlay->addWidget(ohLineEdit);
+        
+        ohlay->addWidget(new QLabel("@"));
+        
+        QLineEdit * ofLineEdit = new QLineEdit;
+        ofLineEdit->setValidator(new QDoubleValidator(0.1, 250.0, 1, ofLineEdit));
+        ofLineEdit->setPlaceholderText(QLocale::system().toString(30.0, 'f', 1));
+        ofLineEdit->setFixedWidth(60);
+        ofLineEdit->
+          setToolTip(splitToolTip(tr("Framerate for the video sent to the host computer over USB. In most cases, "
+                                     "this should match the camera sensor framerate chosen below.")));
+        registerField("of*", ofLineEdit);
+        ohlay->addWidget(ofLineEdit);
+        
+        ohlay->addWidget(new QLabel("fps"));
+        
+        ofmtGB->setLayout(ohlay);
+        lay->addWidget(ofmtGB, idx, 0, 1, 2);
+        ++idx;
+        
+        // ---------- Camera format --------------------------------------------------
+        QGroupBox * cfmtGB = new QGroupBox(tr("Camera sensor video format"));
+        QHBoxLayout  * chlay = new QHBoxLayout;
+        
+        QComboBox * cfmtBox = new QComboBox;
+        cfmtBox->addItem("YUYV");
+        cfmtBox->addItem("BAYER");
+        cfmtBox->addItem("RGB565");
+        cfmtBox->setCurrentIndex(0);
+        cfmtBox->
+          setToolTip(splitToolTip(tr("Pixel format for images captured by the camera sensor. YUYV is the most "
+                                     "common choice.")));
+        registerField("cfmt", cfmtBox, "currentText", "currentTextChanged");
+        chlay->addWidget(cfmtBox);
+        
+        QComboBox * cresBox = new QComboBox;
+        cresBox->addItem("1280 x 1024");
+        cresBox->addItem("640 x 480");
+        cresBox->addItem("352 x 288");
+        cresBox->addItem("320 x 240");
+        cresBox->addItem("176 x 144");
+        cresBox->addItem("160 x 120");
+        cresBox->addItem("88 x 72");
+        cresBox->setCurrentIndex(3);
+        cresBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+        cresBox->
+          setToolTip(splitToolTip(tr("Video resolution captured by the camera sensor.")));
+        registerField("cres", cresBox, "currentText", "currentTextChanged");
+        chlay->addWidget(cresBox);
+        
+        chlay->addWidget(new QLabel("@"));
+        
+        QLineEdit * cfLineEdit = new QLineEdit;
+        cfLineEdit->setPlaceholderText(QLocale::system().toString(30.0, 'f', 1));
+        cfLineEdit->setValidator(new QDoubleValidator(0.1, 60.0, 1, cfLineEdit)); // default validator at 320x240
+        cfLineEdit->setFixedWidth(60);
+        cfLineEdit->
+          setToolTip(splitToolTip(tr("Framerate for the camera sensor. Maximum allowed frame rates for each "
+                                     "camera sensor resolution are: 15fps for 1280x1024, 30fps for 640x480, "
+                                     "60fps for 352x288, 320x240, and 160x120, and 120fps for 176x144 "
+                                     "and 88x72.")));
+        registerField("cf*", cfLineEdit);
+        chlay->addWidget(cfLineEdit);
+        
+        connect(cresBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [cfLineEdit](int idx)
+                {
+                  switch (idx)
+                  {
+                  case 0: cfLineEdit->setValidator(new QDoubleValidator(0.1, 15.0, 1, cfLineEdit)); break;
+                  case 1: cfLineEdit->setValidator(new QDoubleValidator(0.1, 30.0, 1, cfLineEdit)); break;
+                  case 2: cfLineEdit->setValidator(new QDoubleValidator(0.1, 60.0, 1, cfLineEdit)); break;
+                  case 3: cfLineEdit->setValidator(new QDoubleValidator(0.1, 60.0, 1, cfLineEdit)); break;
+                  case 4: cfLineEdit->setValidator(new QDoubleValidator(0.1, 120.0, 1, cfLineEdit)); break;
+                  case 5: cfLineEdit->setValidator(new QDoubleValidator(0.1, 60.0, 1, cfLineEdit)); break;
+                  case 6: cfLineEdit->setValidator(new QDoubleValidator(0.1, 120.0, 1, cfLineEdit)); break;
+                  default: break;
+                  }
+                  
+                  // Need to clear the fps as just changing the validator will not update the wizard complete status:
+                  cfLineEdit->clear();
+                } );
+        
+        chlay->addWidget(new QLabel("fps"));
+        
+        cfmtGB->setLayout(chlay);
+        lay->addWidget(cfmtGB, idx, 0, 1, 2);
+        ++idx;
+        
+        // ---------- Module language --------------------------------------------------
+        lay->addWidget(new QLabel("Language:"), idx, 0);
+        QComboBox * langBox = new QComboBox;
+        langBox->addItem("Python");
+        langBox->addItem("C++");
+        connect(langBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {
+            if (m_icon.isNull())
+              switch (index)
               {
-              case 0: cfLineEdit->setValidator(new QDoubleValidator(0.1, 15.0, 1, cfLineEdit));; break;
-              case 1: cfLineEdit->setValidator(new QDoubleValidator(0.1, 30.0, 1, cfLineEdit));; break;
-              case 2: cfLineEdit->setValidator(new QDoubleValidator(0.1, 60.0, 1, cfLineEdit));; break;
-              case 3: cfLineEdit->setValidator(new QDoubleValidator(0.1, 60.0, 1, cfLineEdit));; break;
-              case 4: cfLineEdit->setValidator(new QDoubleValidator(0.1, 120.0, 1, cfLineEdit));; break;
-              case 5: cfLineEdit->setValidator(new QDoubleValidator(0.1, 60.0, 1, cfLineEdit));; break;
-              case 6: cfLineEdit->setValidator(new QDoubleValidator(0.1, 120.0, 1, cfLineEdit));; break;
-              default: break;
+              case 1: setPixmap(QWizard::LogoPixmap, QPixmap(":/resources/cppicon.png").scaled(64, 64)); break;
+              default: setPixmap(QWizard::LogoPixmap, QPixmap(":/resources/pyicon.png").scaled(64, 64)); break;
               }
-              
-              // Need to clear the fps as just changing the validator will not update the wizard complete status:
-              cfLineEdit->clear();
-            } );
-	
-	chlay->addWidget(new QLabel("fps"));
-	
-	cfmtGB->setLayout(chlay);
-	lay->addWidget(cfmtGB, idx, 0, 1, 2);
-	++idx;
-	
-	// ---------- Module language --------------------------------------------------
-	lay->addWidget(new QLabel("Language:"), idx, 0);
-	QComboBox * langBox = new QComboBox;
-	langBox->addItem("Python");
-	langBox->addItem("C++");
-	connect(langBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int index) {
-	    if (m_icon.isNull())
-	      switch (index)
-	      {
-	      case 1: setPixmap(QWizard::LogoPixmap, QPixmap(":/resources/cppicon.png").scaled(64, 64)); break;
-	      default: setPixmap(QWizard::LogoPixmap, QPixmap(":/resources/pyicon.png").scaled(64, 64)); break;
-	      }
-	  });
-	langBox->setCurrentIndex(0);
-	setPixmap(QWizard::LogoPixmap, QPixmap(":/resources/pyicon.png").scaled(64, 64));
-	langBox->setEnabled(false);
-	langBox->
-	  setToolTip(splitToolTip(tr("JeVois modules can be programmed in C++ or Python, but only Python is "
-                                 "currently supported by JeVois Inventor")));
-	lay->addWidget(langBox, idx, 1);
-	registerField("lang", langBox, "currentText", "currentTextChanged");
-	++idx;
-	
-	// ---------- Module template --------------------------------------------------
-	lay->addWidget(new QLabel("Template:"), idx, 0);
-	QComboBox * modBox = new QComboBox;
-	modBox->addItem(tr("Empty OpenCV Module"));
-	modBox->addItem(tr("Minimal OpenCV Module"));
-	modBox->addItem(tr("Full-featured OpenCV Module"));
-	modBox->addItem(tr("Module with Raw Image access"));
-	modBox->setCurrentIndex(1);
-	modBox->
-	  setToolTip(splitToolTip(tr("If in doubt, try the Minimal OpenCV module first.")));
-	lay->addWidget(modBox, idx, 1);
-	registerField("mod", modBox); // register this one as an int since we localize the strings
-	++idx;
-	
-	setLayout(lay);
+          });
+        langBox->setCurrentIndex(0);
+        setPixmap(QWizard::LogoPixmap, QPixmap(":/resources/pyicon.png").scaled(64, 64));
+        langBox->setEnabled(false);
+        langBox->
+          setToolTip(splitToolTip(tr("JeVois modules can be programmed in C++ or Python, but only Python is "
+                                     "currently supported by JeVois Inventor")));
+        lay->addWidget(langBox, idx, 1);
+        registerField("lang", langBox, "currentText", "currentTextChanged");
+        ++idx;
+        
+        // ---------- Module template --------------------------------------------------
+        lay->addWidget(new QLabel("Template:"), idx, 0);
+        QComboBox * modBox = new QComboBox;
+        modBox->addItem(tr("Empty OpenCV Module"));
+        modBox->addItem(tr("Minimal OpenCV Module"));
+        modBox->addItem(tr("Full-featured OpenCV Module"));
+        modBox->addItem(tr("Module with Raw Image access"));
+        modBox->setCurrentIndex(1);
+        modBox->
+          setToolTip(splitToolTip(tr("If in doubt, try the Minimal OpenCV module first.")));
+        lay->addWidget(modBox, idx, 1);
+        registerField("mod", modBox); // register this one as an int since we localize the strings
+        ++idx;
+        
+        setLayout(lay);
       }
       
       virtual ~NewModulePage()
       { }
-
+      
       bool validatePage()
       {
-	// Get all the data:
-	QString const module = field("name").toString();
-	QString const syno = field("syno").toString();
-	QString const author = field("author").toString();
-	QString const email = field("email").toString();
-	QString const website = field("website").toString();
-	QString const license = field("license").toString();
-	QString const vendor = field("vendor").toString();
-	QString const ofmt = field("ofmt").toString();
-	unsigned int const ow = field("ow").toUInt();
-	unsigned int const oh = field("oh").toUInt();
-	float const of = field("of").toFloat();
-	QString const cfmt = field("cfmt").toString();
-	QString const cres = field("cres").toString();
-	QStringList ccc = cres.split(" x ");
-	if (ccc.size() != 2) { DEBU("internal error: ccc is " << ccc); return false; }
-	unsigned int const cw = ccc[0].toUInt();
-	unsigned int const ch = ccc[1].toUInt();
-	float const cf = field("cf").toFloat();
-	QString const lang = field("lang").toString();
-	int const mod = field("mod").toInt(); // this one was registered as an int
-
-	// First check for conflicting mappings:
-	for (VideoMapping const & m : m_vm)
-	{
-	  if (m.ofmt == ofmt && m.ow == ow && m.oh == oh && fabs(m.ofps - of) < 0.1 &&
-	      QMessageBox::question(this, tr("Conflicting mapping detected"),
-				    tr("Another video mapping exists which conflicts with yours:<br>&nbsp;<br>") +
-				    m.str() + tr("<br>&nbsp;<br>Frame rates will be adjusted by +/- 1 fps by "
-						 "JeVois to resolve the conflict.<br>&nbsp;<br>Ignore or go back to "
-						 "editing your new module's definition?"),
-				    QMessageBox::Cancel | QMessageBox::Ignore,
-				    QMessageBox::Ignore) == QMessageBox::Cancel)
-	    return false;
-	}
-
-	// Set module file name; also use a default icon if it was not uploaded by the user:
-	QString filename = module;
-
-	if (lang == "Python")
-	{ filename +=  ".py"; if (m_icon.isNull()) m_icon = QPixmap(":/resources/pyicon.png"); }
-	else
-	{ filename +=  ".C"; if (m_icon.isNull()) m_icon = QPixmap(":/resources/cppicon.png"); }
-
-	// Prepare a few strings which we will use:
-	QString const dir = JEVOIS_MODULE_PATH "/" + vendor + '/' + module;
-
-	// The video mapping and postinstall:
-	QString const vmstr = ofmt + ' ' + QString::number(ow) + ' ' + QString::number(oh) + ' ' +
-	  QString::number(of) + ' ' + cfmt + ' ' + QString::number(cw) + ' ' + QString::number(ch) + ' ' +
-	  QString::number(cf) + ' ' + vendor + ' ' + module;
-
-	QString const pidata = "jevois-add-videomapping " + vmstr + '\n';
-
-	// The icon as PNG raw data:
-	QByteArray icondata;
-	if (m_icon.width() > 128 || m_icon.height() > 128 || m_icon.width() != m_icon.height())
-	  m_icon = m_icon.scaled(128, 128, Qt::KeepAspectRatio);
-	QBuffer buffer(&icondata);
-	buffer.open(QIODevice::WriteOnly);
-	m_icon.save(&buffer, "PNG"); // writes pixmap into bytes in PNG format
-
-	// The module source code file:
-	QString codename;
-	switch (mod)
-	{
-	case 3: codename = ":/resources/raw.py"; break;
-	case 2: codename = ":/resources/full.py"; break;
-	case 1: codename = ":/resources/mini.py"; break;
-	default: codename = ":/resources/nano.py"; break;
-	}
-	QFile codefile(codename); codefile.open(QIODevice::ReadOnly | QIODevice::Text);
-	QString filedata = codefile.readAll();
-	
-	filedata.replace("@MODULE@", module);
-	filedata.replace("@VENDOR@", vendor);
-	filedata.replace("@VIDEOMAPPING@", vmstr);
-	filedata.replace("@SYNOPSIS@", syno);
-	filedata.replace("@AUTHOR@", author);
-	filedata.replace("@EMAIL@", email);
-	filedata.replace("@WEBSITE@", website);
-	filedata.replace("@LICENSE@", license);
-	filedata.replace("@LANGUAGE@", lang);
-
-	// A stub modinfo.html:
-	QFile mifile(":/resources/modinfo.html"); mifile.open(QIODevice::ReadOnly | QIODevice::Text);
-	QString midata = mifile.readAll();
-	midata.replace("@MODULE@", module);
-	midata.replace("@VENDOR@", vendor);
-	midata.replace("@SYNOPSIS@", syno);
-	midata.replace("@AUTHOR@", author);
-	midata.replace("@EMAIL@", email);
-	midata.replace("@WEBSITE@", website);
-	midata.replace("@LICENSE@", license);
-	midata.replace("@LANGUAGE@", lang);
- 
-	m_inv->newModule1(dir, filename, filedata.toLatin1(), pidata.toLatin1(), icondata, midata.toLatin1());
-
-	return true;
+        // Get all the data:
+        QString const module = field("name").toString();
+        QString const syno = field("syno").toString();
+        QString const author = field("author").toString();
+        QString const email = field("email").toString();
+        QString const website = field("website").toString();
+        QString const license = field("license").toString();
+        QString const vendor = field("vendor").toString();
+        QString const ofmt = field("ofmt").toString();
+        unsigned int const ow = field("ow").toUInt();
+        unsigned int const oh = field("oh").toUInt();
+        float const of = field("of").toFloat();
+        QString const cfmt = field("cfmt").toString();
+        QString const cres = field("cres").toString();
+        QStringList ccc = cres.split(" x ");
+        if (ccc.size() != 2) { DEBU("internal error: ccc is " << ccc); return false; }
+        unsigned int const cw = ccc[0].toUInt();
+        unsigned int const ch = ccc[1].toUInt();
+        float const cf = field("cf").toFloat();
+        QString const lang = field("lang").toString();
+        int const mod = field("mod").toInt(); // this one was registered as an int
+        
+        // First check for conflicting mappings:
+        for (VideoMapping const & m : m_vm)
+        {
+          if (m.ofmt == ofmt && m.ow == ow && m.oh == oh && fabs(m.ofps - of) < 0.1 &&
+              QMessageBox::question(this, tr("Conflicting mapping detected"),
+                                    tr("Another video mapping exists which conflicts with yours:<br>&nbsp;<br>") +
+                                    m.str() + tr("<br>&nbsp;<br>Frame rates will be adjusted by +/- 1 fps by "
+                                                 "JeVois to resolve the conflict.<br>&nbsp;<br>Ignore or go back to "
+                                                 "editing your new module's definition?"),
+                                    QMessageBox::Cancel | QMessageBox::Ignore,
+                                    QMessageBox::Ignore) == QMessageBox::Cancel)
+            return false;
+        }
+        
+        // Set module file name; also use a default icon if it was not uploaded by the user:
+        QString filename = module;
+        
+        if (lang == "Python")
+        { filename +=  ".py"; if (m_icon.isNull()) m_icon = QPixmap(":/resources/pyicon.png"); }
+        else
+        { filename +=  ".C"; if (m_icon.isNull()) m_icon = QPixmap(":/resources/cppicon.png"); }
+        
+        // Prepare a few strings which we will use:
+        QString const dir = JEVOIS_MODULE_PATH "/" + vendor + '/' + module;
+        
+        // The video mapping and postinstall:
+        QString const vmstr = ofmt + ' ' + QString::number(ow) + ' ' + QString::number(oh) + ' ' +
+          QString::number(of) + ' ' + cfmt + ' ' + QString::number(cw) + ' ' + QString::number(ch) + ' ' +
+          QString::number(cf) + ' ' + vendor + ' ' + module;
+        
+        QString const pidata = "jevois-add-videomapping " + vmstr + '\n';
+        
+        // The icon as PNG raw data:
+        QByteArray icondata;
+        if (m_icon.width() > 128 || m_icon.height() > 128 || m_icon.width() != m_icon.height())
+          m_icon = m_icon.scaled(128, 128, Qt::KeepAspectRatio);
+        QBuffer buffer(&icondata);
+        buffer.open(QIODevice::WriteOnly);
+        m_icon.save(&buffer, "PNG"); // writes pixmap into bytes in PNG format
+        
+        // The module source code file:
+        QString codename;
+        switch (mod)
+        {
+        case 3: codename = ":/resources/raw.py"; break;
+        case 2: codename = ":/resources/full.py"; break;
+        case 1: codename = ":/resources/mini.py"; break;
+        default: codename = ":/resources/nano.py"; break;
+        }
+        QFile codefile(codename); codefile.open(QIODevice::ReadOnly | QIODevice::Text);
+        QString filedata = codefile.readAll();
+        
+        filedata.replace("@MODULE@", module);
+        filedata.replace("@VENDOR@", vendor);
+        filedata.replace("@VIDEOMAPPING@", vmstr);
+        filedata.replace("@SYNOPSIS@", syno);
+        filedata.replace("@AUTHOR@", author);
+        filedata.replace("@EMAIL@", email);
+        filedata.replace("@WEBSITE@", website);
+        filedata.replace("@LICENSE@", license);
+        filedata.replace("@LANGUAGE@", lang);
+        
+        // A stub modinfo.html:
+        QFile mifile(":/resources/modinfo.html"); mifile.open(QIODevice::ReadOnly | QIODevice::Text);
+        QString midata = mifile.readAll();
+        midata.replace("@MODULE@", module);
+        midata.replace("@VENDOR@", vendor);
+        midata.replace("@SYNOPSIS@", syno);
+        midata.replace("@AUTHOR@", author);
+        midata.replace("@EMAIL@", email);
+        midata.replace("@WEBSITE@", website);
+        midata.replace("@LICENSE@", license);
+        midata.replace("@LANGUAGE@", lang);
+        
+        m_inv->newModule1(dir, filename, filedata.toLatin1(), pidata.toLatin1(), icondata, midata.toLatin1());
+        
+        return true;
       }
       
     private:
@@ -1025,12 +1027,12 @@ void JeVoisInventor::updateAfterSetMapping()
 {
   // This get triggered when users manually stop the video feed from the System tab:
   if (m_setMappingInProgress == false) return;
-
+  
   // If status changed to LoadingStatus (loading for the first time) or StoppingStatus (stopping a previous module),
   // then set the new mapping:
   auto status = m_camera.status();
   DEBU("updateAfterSetMapping got status " << status);
-
+  
   switch (status)
   {
   case QCamera::UnavailableStatus:
@@ -1039,12 +1041,14 @@ void JeVoisInventor::updateAfterSetMapping()
     startCamera();
     // Next: The camera will get back to us here with an active status
     break;
-
+    
   case QCamera::ActiveStatus:
+    m_fpsn = 0;
+    m_fpsstart = std::chrono::high_resolution_clock::now();
     m_camera.requestSignalFrame(true);
     // Next: the camera will call newCameraFrame() when it actually starts streaming
-  break;
-  
+    break;
+    
   default: break;
   }
 }
@@ -1052,8 +1056,23 @@ void JeVoisInventor::updateAfterSetMapping()
 // ##############################################################################################################
 void JeVoisInventor::newCameraFrame()
 {
-  if (m_setMappingInProgress == false) return;
+  if (m_setMappingInProgress == false)
+  {
+    // Just report fps once in a while:
+    ++ m_fpsn;
+    if (m_fpsn >= 30)
+    {
+      std::chrono::duration<double> const dur = std::chrono::high_resolution_clock::now() - m_fpsstart;
+      double const secs = dur.count();
+      if (secs) statusBar()->showMessage(m_statusstr + " - " + QString::number(30.0/secs, 'g', 4) + " fps");
 
+      m_fpsn = 0;
+      m_fpsstart = std::chrono::high_resolution_clock::now();
+    }
+    
+    return;
+  }
+  
   // This is called by the camera after it starts streaming video; we are now ready to update modinfo, parameters, etc
   // for the new module now that it is loaded and operational:
   m_modinfo.clear();
@@ -1111,8 +1130,9 @@ void JeVoisInventor::infoUpdate(QStringList const & info)
     QApplication::quit();
     return;
   }
-    
-  statusBar()->showMessage(" JeVois Inventor " JVINV_VERSION_STRING  + tr(" with camera running ") + info[0].mid(6));
+
+  m_statusstr = " JeVois Inventor " JVINV_VERSION_STRING  + tr(" with camera running ") + info[0].mid(6);
+  statusBar()->showMessage(m_statusstr);
 
   // Now is a good time to check software version:
   QNetworkRequest request(QUrl(JEVOIS_VERSION_URL));
