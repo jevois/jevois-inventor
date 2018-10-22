@@ -25,7 +25,7 @@
 
 //! Our version number
 #define JVINV_VERSION_MAJOR 0
-#define JVINV_VERSION_MINOR 2
+#define JVINV_VERSION_MINOR 3
 #define JVINV_VERSION_PATCH 0
 
 //! Macro to stringify a value
