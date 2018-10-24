@@ -1,0 +1,5 @@
+*.o
+moc_*
+.qmake.stash
+jevois-inventor.pro.user
+qrc_*
