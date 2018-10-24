@@ -117,7 +117,7 @@ void CamControls::build(QStringList const & controls)
                 else DEBU("ooops camera param " << name << " is not a spinslider");
               });
       m_table->addWidget(slider, idx, 1);
-      m_ctrl[name] = { slider, [slider](int val) { slider->setValue(val); } };
+      m_ctrl[name] = { slider, [slider](int val) { if (val != slider->value()) slider->setValue(val); } };
       
       auto button = new QPushButton("Reset");
       connect(button, &QPushButton::clicked,
@@ -148,7 +148,9 @@ void CamControls::build(QStringList const & controls)
                 else DEBU("ooops camera param " << name << " is not a checkbox");
               });
       m_table->addWidget(chk, idx, 1);
-      m_ctrl[name] = { chk, [chk](int val) { chk->setCheckState(val ? Qt::Checked : Qt::Unchecked); } };
+      m_ctrl[name] = { chk, [chk](int val) {
+          if (val && chk->checkState() == Qt::Unchecked) chk->setCheckState(Qt::Checked);
+          else if (val == 0 && chk->checkState() == Qt::Checked) chk->setCheckState(Qt::Unchecked); } };
       
       auto button = new QPushButton("Reset");
       connect(button, &QPushButton::clicked,
@@ -196,7 +198,7 @@ void CamControls::build(QStringList const & controls)
               });
       
       m_table->addWidget(cbox, idx, 1);
-      m_ctrl[name] = { cbox, [cbox](int val) { cbox->setCurrentIndex(val); } };
+      m_ctrl[name] = { cbox, [cbox](int val) { if (val != cbox->currentIndex()) cbox->setCurrentIndex(val); } };
       
       auto button = new QPushButton("Reset");
       connect(button, &QPushButton::clicked,

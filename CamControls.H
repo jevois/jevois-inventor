@@ -46,14 +46,14 @@ class CamControls : public QWidget
 
     struct Ctrl
     {
-	QWidget * w;
-	std::function<void(int)> set;
+        QWidget * w;
+        std::function<void(int)> set;
     };
     
     // map of all our controls, used for updates and dependent controls:
     // The function is to set the widget value
     std::map<QString, Ctrl> m_ctrl;
-
+    
     // Apply enable/disable of dependent parameters
     void updateDependencies();
 

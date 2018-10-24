@@ -28,13 +28,14 @@ class SpinSlider : public QWidget
   public:
     SpinSlider(int mini, int maxi, int step, Qt::Orientation ori, QWidget * parent = nullptr);
     virtual ~SpinSlider();
-
+    int value() const;
+                     
   public slots:
     void setValue(int val);
-
+    
   signals:
     void valueChanged(int val);
-
+    
   protected:
     QHBoxLayout m_layout;
     QSlider m_slider;

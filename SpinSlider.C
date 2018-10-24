@@ -62,3 +62,7 @@ void SpinSlider::setValue(int val)
   m_slider.setValue(val);
   emit valueChanged(val);
 }
+
+// ##############################################################################################################
+int SpinSlider::value() const
+{ return m_slider.value(); }

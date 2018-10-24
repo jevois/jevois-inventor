@@ -180,7 +180,6 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
           "<br>Known bugs and issues on MacOS:<br>"
           "<ul><li>Display of parameter list may become garbled after repeated fast up/down scrolling.</li>"
           "<li>Switching to a module with same resolution as current one but different frames/s is buggy.</li>"
-          "<li>Enable/disable video stream (in System tab) is buggy.</li>"
           "</ul>"
 #endif
           );
