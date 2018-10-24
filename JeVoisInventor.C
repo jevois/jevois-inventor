@@ -83,14 +83,14 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
   DEBU("Start...");
   // Create a toolbar:
   //m_toolbar = new QToolBar(this);
-
+  
   // put some buttons and stuff, then:
   //addToolBar(m_toolbar);
-
+  
   // Setup our timer that will be in charge of detecting the camera and serial:
   m_conntimer.setSingleShot(true);
   connect(&m_conntimer, &QTimer::timeout, this, &JeVoisInventor::tryconnect);
-
+  
   // Setup our various widgets:
   m_modinfo.setReadOnly(true);
   m_modinfo.setOpenLinks(false);
@@ -101,7 +101,7 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
             if (ustr.startsWith("http") == false) QDesktopServices::openUrl("http://jevois.org" + ustr);
             else QDesktopServices::openUrl(url);
           });
-
+  
   // Create the tabed pages:
   m_tab.addTab(&m_modinfo, tr("Info"));
   m_tab.addTab(&m_params, tr("Parameters"));
@@ -110,9 +110,9 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
   m_tab.addTab(&m_cfg, tr("Config"));
   m_tab.addTab(&m_src, tr("Code"));
   m_tab.addTab(&m_system, tr("System"));
-
+  
   connect(&m_tab, SIGNAL(currentChanged(int)), this, SLOT(tabselected()));
- 
+  
   // Create the side-by-side tab and camera:
   m_splitter.setHandleWidth(5);
   m_splitter.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -136,55 +136,55 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
   
   m_filemenu->addAction(tr("&About"), [this]() {
       QMessageBox::about(this, tr("About JeVois Inventor"),
-			 "<b>JeVois Inventor " JVINV_VERSION_STRING "</b><br> <br>Copyright (C) 2018 by Laurent Itti, "
-			 "the University of Southern California (USC), and iLab at USC.<br> <br>See "
-			 "<a href=http://jevois.org>http://jevois.org</a> for information about this project."); });
+                         "<b>JeVois Inventor " JVINV_VERSION_STRING "</b><br> <br>Copyright (C) 2018 by Laurent Itti, "
+                         "the University of Southern California (USC), and iLab at USC.<br> <br>See "
+                         "<a href=http://jevois.org>http://jevois.org</a> for information about this project."); });
   m_filemenu->addSeparator();
   
   m_filemenu->addAction(tr("JeVois &Home Page"),
-			[](){ QDesktopServices::openUrl(QUrl("http://jevois.org")); });
+                        [](){ QDesktopServices::openUrl(QUrl("http://jevois.org")); });
   m_filemenu->addAction(tr("JeVois &Inventor Documentation"),
-			[](){ QDesktopServices::openUrl(QUrl("http://jevois.org/doc/JeVoisInventor.html")); });
+                        [](){ QDesktopServices::openUrl(QUrl("http://jevois.org/doc/JeVoisInventor.html")); });
   m_filemenu->addAction(tr("JeVois &Documentation"),
-			[](){ QDesktopServices::openUrl(QUrl("http://jevois.org/doc/index.html")); });
+                        [](){ QDesktopServices::openUrl(QUrl("http://jevois.org/doc/index.html")); });
   m_filemenu->addAction(tr("JeVois &Modules Page"),
-			[](){ QDesktopServices::openUrl(QUrl("http://jevois.org/doc/UserDemos.html")); });
+                        [](){ QDesktopServices::openUrl(QUrl("http://jevois.org/doc/UserDemos.html")); });
   m_filemenu->addAction(tr("JeVois &User Tutorials"),
-			[](){ QDesktopServices::
-			    openUrl(QUrl("http://jevois.org/tutorials/UserTutorials.html")); });
+                        [](){ QDesktopServices::
+                            openUrl(QUrl("http://jevois.org/tutorials/UserTutorials.html")); });
   m_filemenu->addAction(tr("JeVois &Programmer Tutorials"),
-			[](){ QDesktopServices::
-			    openUrl(QUrl("http://jevois.org/tutorials/ProgrammerTutorials.html")); });
+                        [](){ QDesktopServices::
+                            openUrl(QUrl("http://jevois.org/tutorials/ProgrammerTutorials.html")); });
   
   m_filemenu->addSeparator();
-
+  
   m_filemenu->addAction(tr("&Quit"), [this]()
 			{ if (proceedDiscardAnyEdits()) { this->enableUI(false); this->close(); } });
   m_filemenu->actions().back()->setShortcuts(QKeySequence::Quit);
-    
+  
   // Start disabled, tryconnect() will enable:
   enableUI(false);
-
+  
   // Show welcome message for this beta:
   QMessageBox::
     about(this, tr("Welcome to JeVois Inventor Beta!"),
-	  "Welcome to JeVois Inventor beta " JVINV_VERSION_STRING "<br> <br>Use the menubar to select and create "
-      "machine vision modules. <br> <br>Please help us improve this software by reporting bugs to "
-      "<a href=\"mailto:jevois.org@gmail.com\">jevois.org@gmail.com</a><br> <br>"
-	  "Current limitations:"
-	  "<ul><li>Can only display YUYV video</li>"
-	  "<li>Can only edit/create Python code, C++ editing and compiling not yet supported.</li>"
-	  "<li>No documentation parser yet, newly created modules will not have a proper documentation page.</li>"
-	  "</ul>"
+          "Welcome to JeVois Inventor beta " JVINV_VERSION_STRING "<br> <br>Use the menubar to select and create "
+          "machine vision modules. <br> <br>Please help us improve this software by reporting bugs to "
+          "<a href=\"mailto:jevois.org@gmail.com\">jevois.org@gmail.com</a><br> <br>"
+          "Current limitations:"
+          "<ul><li>Can only display YUYV video</li>"
+          "<li>Can only edit/create Python code, C++ editing and compiling not yet supported.</li>"
+          "<li>No documentation parser yet, newly created modules will not have a proper documentation page.</li>"
+          "</ul>"
 #ifdef Q_OS_MACOS
-	  "<br>Known bugs and issues on MacOS:<br>"
-	  "<ul><li>Display of parameter list may become garbled after repeated fast up/down scrolling.</li>"
-	  "<li>Switching to a module with same resolution as current one but different frames/s is buggy.</li>"
-	  "<li>Enable/disable video stream (in System tab) is buggy.</li>"
-	  "</ul>"
+          "<br>Known bugs and issues on MacOS:<br>"
+          "<ul><li>Display of parameter list may become garbled after repeated fast up/down scrolling.</li>"
+          "<li>Switching to a module with same resolution as current one but different frames/s is buggy.</li>"
+          "<li>Enable/disable video stream (in System tab) is buggy.</li>"
+          "</ul>"
 #endif
-	  );
-
+          );
+  
 #ifdef Q_OS_LINUX
   // On Linux, nuke ModemManager if it is running:
   DEBU("Checking for ModemManager...");
@@ -195,31 +195,31 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
   if (tlo.contains("ModemManager"))
   {
     QMessageBox::information(this, tr("ModemManager detected"),
-			     tr("Your computer is running the program ModemManager, which interferes with JeVois.\n\n"
-				"Enter your administrator password in the next prompt to stop ModemManager\n\n"
-				"To avoid this question in the future, type this in a terminal:\n\n") +
-			     "sudp apt purge modemmanager",
-			     QMessageBox::Ok);
+                             tr("Your computer is running the program ModemManager, which interferes with JeVois.\n\n"
+                                "Enter your administrator password in the next prompt to stop ModemManager\n\n"
+                                "To avoid this question in the future, type this in a terminal:\n\n") +
+                             "sudo apt purge modemmanager",
+                             QMessageBox::Ok);
     QString const cmd = "pkexec --disable-internal-agent killall ModemManager";
     if (system(cmd.toLatin1().data()) != 0)
     {
       QMessageBox::information(this, tr("ModemManager error"),
-			       tr("We could not stop ModemManager.\n\n"
-				  "Please run this in a terminal window:\n\n") +
-			       "sudo killall ModemManager", QMessageBox::Ok);
+                               tr("We could not stop ModemManager.\n\n"
+                                  "Please run this in a terminal window:\n\n") +
+                               "sudo killall ModemManager", QMessageBox::Ok);
     }
     QMessageBox::information(this, tr("Restart after killing ModemManager"),
-			     tr("ModemManager may have put your JeVois camera in an unknown state.\n\n"
-				"Please restart your JeVois camera now (disconnect it and plug it back in)."),
-			     QMessageBox::Ok);
+                             tr("ModemManager may have put your JeVois camera in an unknown state.\n\n"
+                                "Please restart your JeVois camera now (disconnect it and plug it back in)."),
+                             QMessageBox::Ok);
   }
 #endif
-
+  
   // Final inits will be handled in tryconnect()
   m_conntimer.start(0);
-
+  
   DEBU("Ready");
-
+  
   // Let editors request reboot:
   connect(&m_src, &Editor::askReboot, this, &JeVoisInventor::rebootJeVois);
   connect(&m_cfg, &CfgStack::askReboot, this, &JeVoisInventor::rebootJeVois);
@@ -233,7 +233,7 @@ void JeVoisInventor::versionCheck(QNetworkReply * reply)
 {
   // Just ignore network failures:
   if (reply->error() != QNetworkReply::NoError) return;
-
+  
   // Parse the version file:
   QString const ver = QString(reply->readAll());
   QStringList const vl = ver.split('\n');
@@ -246,27 +246,31 @@ void JeVoisInventor::versionCheck(QNetworkReply * reply)
       QStringList const vv = vec[1].split('.');
       if (vv.size() == 3)
       {
-	int const major = vv[0].toInt();
-	int const minor = vv[1].toInt();
-	int const patch = vv[2].toInt();
-
-	if (soft == "jevois" &&
-	    (m_jvmajor < major || m_jvminor < minor || m_jvpatch < patch))
-	  QMessageBox::information(this, tr("New version available"),
-				   tr("A new JeVois microSD image, version ") + vec[1] +
-				   tr(", is available.<br> <br>Your camera is now running JeVois ") +
-				   QString::number(m_jvmajor) + '.' + QString::number(m_jvminor) + '.' +
-				   QString::number(m_jvpatch) +
-				   tr("<br> <br>Please download the new image from "
-				      "<a href=\"http:/jevois.org/start\">http://jevois.org/start</a>"),
-				   QMessageBox::Ok);
-	if (soft == "jevois-inventor" &&
-	    (JVINV_VERSION_MAJOR < major || JVINV_VERSION_MINOR < minor || JVINV_VERSION_PATCH < patch))
-	  QMessageBox::information(this, tr("New version available"),
-				   tr("A new version of JeVois Inventor (") + vec[1] +
-				   tr(") is available.<br> <br>Please download it from "
-				      "<a href=\"http:/jevois.org/start\">http://jevois.org/start</a>"),
-				   QMessageBox::Ok);
+        int const major = vv[0].toInt();
+        int const minor = vv[1].toInt();
+        int const patch = vv[2].toInt();
+        
+        if (soft == "jevois" &&
+            (m_jvmajor < major ||
+             (m_jvmajor == major && m_jvminor < minor) ||
+             (m_jvmajor == major && m_jvminor == minor && m_jvpatch < patch)))
+          QMessageBox::information(this, tr("New version available"),
+                                   tr("A new JeVois microSD image, version ") + vec[1] +
+                                   tr(", is available.<br> <br>Your camera is now running JeVois ") +
+                                   QString::number(m_jvmajor) + '.' + QString::number(m_jvminor) + '.' +
+                                   QString::number(m_jvpatch) +
+                                   tr("<br> <br>Please download the new image from "
+                                      "<a href=\"http:/jevois.org/start\">http://jevois.org/start</a>"),
+                                   QMessageBox::Ok);
+        if (soft == "jevois-inventor" &&
+            (JVINV_VERSION_MAJOR < major ||
+             (JVINV_VERSION_MAJOR == major && JVINV_VERSION_MINOR < minor) ||
+             (JVINV_VERSION_MAJOR == major && JVINV_VERSION_MINOR == minor && JVINV_VERSION_PATCH < patch)))
+          QMessageBox::information(this, tr("New version available"),
+                                   tr("A new version of JeVois Inventor (") + vec[1] +
+                                   tr(") is available.<br> <br>Please download it from "
+                                      "<a href=\"http:/jevois.org/start\">http://jevois.org/start</a>"),
+                                   QMessageBox::Ok);
       }
     }
   }
@@ -285,8 +289,7 @@ void JeVoisInventor::tryconnect()
   {
     DEBU("Camera not available...");
     enableUI(false);
-    statusBar()->showMessage(" JeVois Inventor " JVINV_VERSION_STRING +
-			     tr(" waiting for JeVois Smart Camera"));
+    statusBar()->showMessage(" JeVois Inventor " JVINV_VERSION_STRING + tr(" waiting for JeVois Smart Camera"));
     m_conntimer.start(1000);
     return;
   }
@@ -298,7 +301,7 @@ void JeVoisInventor::tryconnect()
     DEBU("Serial not available...");
     enableUI(false);
     statusBar()->showMessage(" JeVois Inventor " JVINV_VERSION_STRING +
-			     tr(", camera device ok, waiting for serial-over-USB"));
+                             tr(", camera device ok, waiting for serial-over-USB"));
 #ifdef Q_OS_WIN
     ++ nretry;
     if (nretry == 5)
@@ -374,8 +377,12 @@ void JeVoisInventor::disconnect()
 void JeVoisInventor::enableUI(bool en)
 {
   m_tab.setEnabled(en);
-  if (m_modmenu) m_modmenu->setEnabled(en);
-
+  if (m_modmenu)
+  {
+    if (m_system.isHeadless()) m_modmenu->setEnabled(false);
+    else m_modmenu->setEnabled(en);
+  }
+  
   if (en == false)
   {
     // Go to a safe config:
@@ -959,14 +966,24 @@ void JeVoisInventor::buildModMenu(QStringList const & mappings)
     if (vm.vendor == "JeVois" && vm.modulename == "JeVoisIntro" && vm.ow == 640 && vm.oh == 480)
       m_modmenu->actions().back()->setEnabled(false);
 
-    // Launch our default module:
-    if (vm.vendor == "JeVois" && vm.modulename == "DemoSaliency" && vm.ow == 640 && vm.oh == 300)
+    // Launch our default module, unless user turned off streaming in the system tab:
+    if (m_system.isHeadless() == false &&
+        vm.vendor == "JeVois" && vm.modulename == "DemoSaliency" && vm.ow == 640 && vm.oh == 300)
     { setMapping(vm); started = true; }
   }
 
-  // If we did not start JeVoisIntro, just start the first available module:
-  if (started == false && m_vm.isEmpty() == false) setMapping(0);
+  // If we did not start DemoSaliency, just start the first available module, unless user turned off streaming:
+  if (started == false && m_vm.isEmpty() == false && m_system.isHeadless() == false) setMapping(0);
 
+  // If user disabled streaming, we still want to get some info about the module that is running:
+  if (m_system.isHeadless())
+  {
+    m_setMappingInProgress = true;
+    newCameraFrame();
+    m_camera.showVideo(false, true);
+    m_modmenu->setEnabled(false);
+  }
+  
   // Enable our menu and our widget:
   enableUI(true);
 }
@@ -993,7 +1010,7 @@ void JeVoisInventor::setMapping(VideoMapping const & v)
   if (m_camera.status() == QCamera::ActiveStatus)
   {
     m_camera.showVideo(false, true);
-    m_camera.stop(); // updateAfterSetMapping() will be called with a stopping status
+    stopCamera(); // updateAfterSetMapping() will be called with a stopping status
   }
   else
     startCamera(); // updateAfterSetMapping() will be called with a starting status
@@ -1023,15 +1040,15 @@ void JeVoisInventor::startCamera()
 }
 
 // ##############################################################################################################
-void JeVoisInventor::updateAfterSetMapping()
+void JeVoisInventor::updateAfterSetMapping(QCamera::Status status)
 {
-  // This get triggered when users manually stop the video feed from the System tab:
+  // This gets triggered when users manually stop the video feed from the System tab:
   if (m_setMappingInProgress == false) return;
   
   // If status changed to LoadingStatus (loading for the first time) or StoppingStatus (stopping a previous module),
   // then set the new mapping:
-  auto status = m_camera.status();
-  DEBU("updateAfterSetMapping got status " << status);
+  //auto status = m_camera.status();
+  INFO("got status " << status);
   
   switch (status)
   {
@@ -1098,7 +1115,7 @@ void JeVoisInventor::infoUpdate(QStringList const & info)
   if (info.size() < 2)
   {
     QMessageBox::critical(this, tr("Communication error"),
-			  tr("Cannot obtain JeVois software version\nfrom JeVois Smart Camera\n\nDisconnecting..."));
+                          tr("Cannot obtain JeVois software version\nfrom JeVois Smart Camera\n\nDisconnecting..."));
     disconnect();
     return;
   }
@@ -1107,7 +1124,7 @@ void JeVoisInventor::infoUpdate(QStringList const & info)
   if (sl.size() != 3)
   {
     QMessageBox::critical(this, tr("Communication error"),
-			  tr("Malformated JeVois software version\nfrom JeVois Smart Camera\n\nDisconnecting..."));
+                          tr("Malformed JeVois software version\nfrom JeVois Smart Camera\n\nDisconnecting..."));
     disconnect();
     return;
   }
@@ -1221,7 +1238,7 @@ void JeVoisInventor::serialError(QSerialPort::SerialPortError error)
 
 // ##############################################################################################################
 void JeVoisInventor::updateCmdInfo(QStringList const & ci,
-				   std::map<QString /* command */, QString /* description */> & cmap)
+                                   std::map<QString /* command */, QString /* description */> & cmap)
 {
   cmap.clear();
   
@@ -1290,7 +1307,7 @@ void JeVoisInventor::rebootJeVois()
   // Calling disconnect() after command crashes app on windows 10
   m_serial.command("restart");
 
-  // DO not call enableUI(false) here as it disables the frame timeout. Just a quick disable:
+  // Do not call enableUI(false) here as it disables the frame timeout. Just a quick disable:
   m_tab.setEnabled(false);
   if (m_modmenu) m_modmenu->setEnabled(false);
 }

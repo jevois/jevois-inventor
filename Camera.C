@@ -194,7 +194,8 @@ bool Camera::createCamera(QCameraInfo const & caminfo)
   connect(m_camera.data(), QOverload<QCamera::Error>::of(&QCamera::error), this, &Camera::camerror);
 
   // Send a signal when we start grabbing, to update the modinfo:
-  connect(m_camera.data(), &QCamera::statusChanged,
+  connect(m_camera.data(), &QCamera::statusChanged, m_inventor, &JeVoisInventor::updateAfterSetMapping);
+  /*
 	  [this](QCamera::Status status)
 	  {
 	    Q_UNUSED(status); // unused if debug is off
@@ -202,7 +203,7 @@ bool Camera::createCamera(QCameraInfo const & caminfo)
 	    // Note: a lambda singleshot does not work here, gives rise to threading issues
 	    QTimer::singleShot(0, m_inventor, &JeVoisInventor::updateAfterSetMapping);
 	  });
-  
+  */
   // Connect our probe for fps info and detection of stream start:
   m_probe.setSource(m_camera.data());
   

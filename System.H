@@ -32,7 +32,8 @@ class System : public QWidget
 
     System(JeVoisInventor * inv, Serial * serial, Camera * cam, QWidget * parent = nullptr);
     virtual ~System();
-
+    bool isHeadless() const;
+    
   protected:
     JeVoisInventor * m_inv;
     Serial * m_serial;
@@ -40,4 +41,5 @@ class System : public QWidget
     QPushButton m_stream;
     QPushButton m_usbsd;
     QPushButton m_date;
+    bool m_headless;
 };

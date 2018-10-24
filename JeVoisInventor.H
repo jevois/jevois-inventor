@@ -69,7 +69,7 @@ class JeVoisInventor : public QMainWindow
     void newCameraFrame();
 
   public slots:
-    void updateAfterSetMapping();
+    void updateAfterSetMapping(QCamera::Status status);
     void serialError(QSerialPort::SerialPortError error);
     void serialDisconnect();
     void cameraDisconnect();
