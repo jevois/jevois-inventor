@@ -145,10 +145,13 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
                         [](){ QDesktopServices::openUrl(QUrl("http://jevois.org")); });
   m_filemenu->addAction(tr("JeVois &Inventor Documentation"),
                         [](){ QDesktopServices::openUrl(QUrl("http://jevois.org/doc/JeVoisInventor.html")); });
-  m_filemenu->addAction(tr("JeVois &Documentation"),
-                        [](){ QDesktopServices::openUrl(QUrl("http://jevois.org/doc/index.html")); });
+  m_filemenu->addAction(tr("JeVois &Guided Tour"),
+                        [](){ QDesktopServices::
+                            openUrl(QUrl("http://jevois.org/data/jevois-guided-tour-latest.pdf")); });
   m_filemenu->addAction(tr("JeVois &Modules Page"),
                         [](){ QDesktopServices::openUrl(QUrl("http://jevois.org/doc/UserDemos.html")); });
+  m_filemenu->addAction(tr("JeVois &Documentation"),
+                        [](){ QDesktopServices::openUrl(QUrl("http://jevois.org/doc/index.html")); });
   m_filemenu->addAction(tr("JeVois &User Tutorials"),
                         [](){ QDesktopServices::
                             openUrl(QUrl("http://jevois.org/tutorials/UserTutorials.html")); });
@@ -1046,8 +1049,7 @@ void JeVoisInventor::updateAfterSetMapping(QCamera::Status status)
   
   // If status changed to LoadingStatus (loading for the first time) or StoppingStatus (stopping a previous module),
   // then set the new mapping:
-  //auto status = m_camera.status();
-  INFO("got status " << status);
+  DEBU("got status " << status);
   
   switch (status)
   {
