@@ -1008,10 +1008,10 @@ void JeVoisInventor::setMapping(VideoMapping const & v)
   // Store the mapping for future use:
   m_currmapping = v;
 
-  // If the camera is not currently active, start right here; otherwise, first stop it:
+  // If the camera is active, stop it first, otherwise start it:
   if (m_camera.status() == QCamera::ActiveStatus)
   {
-    m_camera.showVideo(false, true);
+    m_camera.showVideo(false);
     stopCamera(); // updateAfterSetMapping() will be called with a stopping status
   }
   else
