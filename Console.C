@@ -60,20 +60,43 @@ Console::Console(Serial * serport, QWidget * parent) :
   m_log.setFont(f);
 
   cf_cmd = m_log.currentCharFormat();
-  cf_cmd.setForeground(Qt::blue);
-  cf_serout = cf_cmd;
-  cf_serout.setForeground(Qt::black);
-  cf_ok = cf_cmd;
-  cf_ok.setForeground(Qt::darkGreen);
-  cf_dbg = cf_cmd;
-  cf_dbg.setForeground(Qt::darkYellow);
-  cf_inf = cf_cmd;
-  cf_inf.setForeground(Qt::darkCyan);
-  cf_err = cf_cmd;
-  cf_err.setForeground(Qt::darkRed);
-  cf_ftl = cf_cmd;
-  cf_ftl.setForeground(Qt::darkBlue);
-  
+
+  // Check for dark theme (e.g., under MacOS Mojave):
+  if (cf_cmd.foreground().color().lightness() > 127)
+  {
+    // Light (usually white) background:
+    cf_cmd.setForeground(Qt::blue);
+    cf_serout = cf_cmd;
+    cf_serout.setForeground(Qt::black);
+    cf_ok = cf_cmd;
+    cf_ok.setForeground(Qt::darkGreen);
+    cf_dbg = cf_cmd;
+    cf_dbg.setForeground(Qt::darkYellow);
+    cf_inf = cf_cmd;
+    cf_inf.setForeground(Qt::darkCyan);
+    cf_err = cf_cmd;
+    cf_err.setForeground(Qt::darkRed);
+    cf_ftl = cf_cmd;
+    cf_ftl.setForeground(Qt::darkBlue);
+  }
+  else
+  {
+    // Dark background:
+    cf_cmd.setForeground(QColor(Qt::blue).lighter());
+    cf_serout = cf_cmd;
+    cf_serout.setForeground(Qt::white);
+    cf_ok = cf_cmd;
+    cf_ok.setForeground(Qt::green);
+    cf_dbg = cf_cmd;
+    cf_dbg.setForeground(Qt::yellow);
+    cf_inf = cf_cmd;
+    cf_inf.setForeground(Qt::cyan);
+    cf_err = cf_cmd;
+    cf_err.setForeground(Qt::red);
+    cf_ftl = cf_cmd;
+    cf_ftl.setForeground(QColor(Qt::blue).lighter(200));
+  }
+    
   auto vlayout = new QVBoxLayout(this);
   vlayout->setMargin(JVINV_MARGIN); vlayout->setSpacing(JVINV_SPACING);
   

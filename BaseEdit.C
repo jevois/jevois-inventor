@@ -114,10 +114,13 @@ void BaseEdit::highlightCurrentLine()
   if (!isReadOnly())
   {
     QTextEdit::ExtraSelection selection;
-    
-    QColor lineColor = QColor(Qt::yellow).lighter(185);
-    
-    selection.format.setBackground(lineColor);
+
+    // Decide on highlight color depending on whether a dark theme is running:
+    QColor linecolor;
+    if (palette().brush(QPalette::Base).color().lightness() > 127) linecolor = QColor(Qt::yellow).lighter(185);
+    else linecolor = QColor(Qt::yellow).darker(300);
+  
+    selection.format.setBackground(linecolor);
     selection.format.setProperty(QTextFormat::FullWidthSelection, true);
     selection.cursor = textCursor();
     selection.cursor.clearSelection();

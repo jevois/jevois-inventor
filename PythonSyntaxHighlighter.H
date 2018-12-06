@@ -62,7 +62,7 @@ class PythonSyntaxHighlighter : public QSyntaxHighlighter
     
     void initializeRules();
     
-    //! Highlighst multi-line strings, returns true if after processing we are still within the multi-line section.
+    //! Highlight multi-line strings, returns true if after processing we are still within the multi-line section.
     bool matchMultiline(const QString &text, const QRegExp &delimiter, const int inState, const QTextCharFormat &style);
     const QTextCharFormat getTextCharFormat(const QString &colorName, const QString &style = QString());
     

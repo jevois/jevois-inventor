@@ -46,7 +46,12 @@ TopPanel::TopPanel(QWidget * parent) :
 
   m_modlang.setTextFormat(Qt::RichText);
   m_modlang.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-  m_modlang.setStyleSheet("QLabel { color: navy; font-weight: 500; }");
+
+  // Select dark or light blue depending on background color (eg, MacOS Mojave dark mode):
+  if (m_modlang.palette().brush(QPalette::Base).color().lightness() > 127)
+    m_modlang.setStyleSheet("QLabel { color: navy; font-weight: 500; }");
+  else
+    m_modlang.setStyleSheet("QLabel { color: lightblue; font-weight: 500; }");
 
   m_icon.setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
