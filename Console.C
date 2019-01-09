@@ -59,12 +59,10 @@ Console::Console(Serial * serport, QWidget * parent) :
   m_input.setFont(f);
   m_log.setFont(f);
 
-  cf_cmd = m_log.currentCharFormat();
-
   // Check for dark theme (e.g., under MacOS Mojave):
-  if (cf_cmd.foreground().color().lightness() < 127)
+  if (m_serlogusb.palette().color(QPalette::Button).lightness() > 127)
   {
-    // Dark-colored foreground text, normal (light) mode:
+    // Normal (light) mode:
     cf_cmd.setForeground(Qt::blue);
     cf_serout = cf_cmd;
     cf_serout.setForeground(Qt::black);
@@ -81,7 +79,7 @@ Console::Console(Serial * serport, QWidget * parent) :
   }
   else
   {
-    // Light-colored foreground text means dark mode:
+    // Dark mode:
     cf_cmd.setForeground(QColor(Qt::blue).lighter());
     cf_serout = cf_cmd;
     cf_serout.setForeground(Qt::white);
