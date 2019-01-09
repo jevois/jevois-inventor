@@ -300,6 +300,11 @@ void Editor::loadFileLocal(bool noask)
     {
       QByteArray const data = file.readAll();
       m_edit->setData(data);
+
+      // Remember the directory:
+      QStringList dir = QDir::cleanPath(localfname).split('/');
+      dir.pop_back();
+      settings.setValue("default_local_dir", dir.join('/'));
     }
   }
 }
@@ -327,32 +332,21 @@ void Editor::saveFileLocal(bool noask)
   QString const localfname = QFileDialog::getSaveFileName(this, "Select file to save to", loc);
   if (localfname.isEmpty()) return;
 
-  // Check if the file exists to ask to confirm overwrite:
-  bool writeit = true;
-  QFile testfile(localfname);
-  if (testfile.open(QFile::ReadOnly | QFile::Text) &&
-      QMessageBox::question(this, tr("Overwrite local file?"), tr("Overwrite existing local file?"),
-                            QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) != QMessageBox::Yes)
-    writeit = false;
-  
   // Write the file:
-  if (writeit)
+  bool success = true;
+  QFile file(localfname);
+  if (file.open(QFile::WriteOnly | QFile::Text) == false) success = false;
+  else if (file.write(data) != data.size()) success = false;
+  
+  if (success == false) QMessageBox::critical(this, tr("Failed to save to local file"),
+                                              tr("Saving to local file failed. Check filename and permissions."));
+  
+  else
   {
-    bool success = true;
-    QFile file(localfname);
-    if (file.open(QFile::WriteOnly | QFile::Text) == false) success = false;
-    else if (file.write(data) != data.size()) success = false;
-    
-    if (success == false) QMessageBox::critical(this, tr("Failed to save to local file"),
-                                                tr("Saving to local file failed. Check filename and permissions."));
-
-    else
-    {
-      // Remember the directory:
-      QStringList dir = QDir::cleanPath(localfname).split('/');
-      dir.pop_back();
-      settings.setValue("default_local_dir", dir.join('/'));
-    }
+    // Remember the directory:
+    QStringList dir = QDir::cleanPath(localfname).split('/');
+    dir.pop_back();
+    settings.setValue("default_local_dir", dir.join('/'));
   }
 }
 
