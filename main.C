@@ -24,6 +24,11 @@ int main(int argc, char *argv[])
 {
   QApplication a(argc, argv);
 
+  // Set some essential info for persistent QSettings:
+  a.setApplicationName("jevois-inventor");
+  a.setOrganizationName("JeVois");
+  a.setOrganizationDomain("jevois.org");
+    
   // Install a translator for the standard Qt buttons of QDialog, QWizard, QMessageBox, etc:
 #ifndef QT_NO_TRANSLATION
   QString translatorFileName = QLatin1String("qt_");

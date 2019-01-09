@@ -27,6 +27,7 @@
 #include <QFileDialog>
 #include <QStandardPaths>
 #include <QFontMetrics>
+#include <QSettings>
 
 #include <QDebug>
 
@@ -287,7 +288,10 @@ void Editor::loadFileLocal(bool noask)
   if (doit)
   {
     QStringList locs = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
-    QString loc = locs.isEmpty() ? "" : locs[0];
+    QString defloc = locs.isEmpty() ? "" : locs[0];
+
+    QSettings settings;
+    QString loc = settings.value("default_local_dir", defloc).toString();
 
     QString const localfname = QFileDialog::getOpenFileName(this, "Select file to load", loc);
 
@@ -306,21 +310,50 @@ void Editor::saveFileLocal(bool noask)
   Q_UNUSED(noask);
 
   if (m_save.isEnabled() == false) return; // pressed ctrl-shift-s but save is disabled?
-  
+
   QByteArray const data =  m_edit->toPlainText().toLatin1();
+
+  // Remember the last selected location or pick a reasonable default:
   QStringList locs = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
-  QString loc = locs.isEmpty() ? "" : locs[0];
-  loc = QDir::cleanPath(loc); // convert to forward slash
+  QString defloc = locs.isEmpty() ? "" : locs[0];
+  defloc = QDir::cleanPath(defloc); // convert to forward slash
+  
+  QSettings settings;
+  QString loc = settings.value("default_local_dir", defloc).toString();
+
   QStringList const fn = m_fname.split('/');
   loc += '/' + fn.back();
-  
+
   QString const localfname = QFileDialog::getSaveFileName(this, "Select file to save to", loc);
   if (localfname.isEmpty()) return;
+
+  // Check if the file exists to ask to confirm overwrite:
+  bool writeit = true;
+  QFile testfile(localfname);
+  if (testfile.open(QFile::ReadOnly | QFile::Text) &&
+      QMessageBox::question(this, tr("Overwrite local file?"), tr("Overwrite existing local file?"),
+                            QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) != QMessageBox::Yes)
+    writeit = false;
   
-  QFile file(localfname);
-  if (file.open(QFile::WriteOnly | QFile::Text)) file.write(data);
-  else QMessageBox::critical(this, tr("Failed to save to local file"),
-			     tr("Saving to local file failed. Check filename and permissions."));
+  // Write the file:
+  if (writeit)
+  {
+    bool success = true;
+    QFile file(localfname);
+    if (file.open(QFile::WriteOnly | QFile::Text) == false) success = false;
+    else if (file.write(data) != data.size()) success = false;
+    
+    if (success == false) QMessageBox::critical(this, tr("Failed to save to local file"),
+                                                tr("Saving to local file failed. Check filename and permissions."));
+
+    else
+    {
+      // Remember the directory:
+      QStringList dir = QDir::cleanPath(localfname).split('/');
+      dir.pop_back();
+      settings.setValue("default_local_dir", dir.join('/'));
+    }
+  }
 }
 
 // ##############################################################################################################
