@@ -37,8 +37,8 @@ PreferencesDialog::PreferencesDialog(JeVoisInventor * jvinv, QWidget * parent) :
   // Headless start:
   if (settings.value(SETTINGS_HEADLESS, false).toBool()) m_headless.setCheckState(Qt::Checked);
   connect(&m_headless, &QCheckBox::stateChanged, [this](int value) {
-      if (value == Qt::Checked) QSettings().setValue(SETTINGS_HEADLESS, true);
-      else QSettings().setValue(SETTINGS_HEADLESS, false);
+      if (value == Qt::Checked) { QSettings().setValue(SETTINGS_HEADLESS, true); m_defmap.setEnabled(false); }
+      else { QSettings().setValue(SETTINGS_HEADLESS, false); m_defmap.setEnabled(true); }
     });
 
   lay->addRow(tr("Start in headless mode:"), &m_headless);
@@ -62,6 +62,9 @@ PreferencesDialog::PreferencesDialog(JeVoisInventor * jvinv, QWidget * parent) :
         if (vm.ostr() == val) QSettings().setValue(SETTINGS_DEFMAPPING, vm.str());
     } );
 
+  // Grey out the default mapping when headless:
+  if (m_headless.isChecked()) m_defmap.setEnabled(false);
+ 
   lay->addRow(tr("Default vision module:"), &m_defmap);
 
   // Our button box:
