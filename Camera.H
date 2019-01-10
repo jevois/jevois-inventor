@@ -33,7 +33,7 @@ class QThread;
 class JeVoisInventor;
 
 #define JVINV_WAIT_MESSAGE "Waiting for JeVois Smart Camera\n\nPlease connect JeVois to this computer"
-#define JVINV_NOSTREAM_MESSAGE "No video stream from JeVois\n\nRunning in headless mode.\n\nQuit and restart JeVois Inventor to switch back to video streaming mode."
+#define JVINV_NOSTREAM_MESSAGE "No video stream from JeVois\n\nRunning in headless mode.\n\nQuit and restart JeVois Inventor to switch back to video streaming mode.\n\n(and check the headless setting in the Preferences menu)"
 
 class Camera : public QWidget
 {
