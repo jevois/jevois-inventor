@@ -47,6 +47,7 @@
 class QToolBar;
 class QMenu;
 class QNetworkReply;
+class PreferencesDialog;
 
 class JeVoisInventor : public QMainWindow
 {
@@ -145,9 +146,13 @@ class JeVoisInventor : public QMainWindow
     void versionCheck(QNetworkReply * reply);
 
     bool proceedDiscardAnyEdits();
+
+    void editPreferences();
     
     int m_jvmajor, m_jvminor, m_jvpatch; // Version of JeVois running on the camera
     int m_fpsn;
     std::chrono::time_point<std::chrono::high_resolution_clock> m_fpsstart;
     QString m_statusstr;
+
+    friend class PreferencesDialog;
 };

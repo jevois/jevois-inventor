@@ -14,32 +14,25 @@
 // Tel: +1 213 740 3527 - itti@pollux.usc.edu - http://iLab.usc.edu - http://jevois.org
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 #pragma once
 
-#include "Config.H"
+#include <QDialog>
+#include <QCheckBox>
+#include <QComboBox>
 
-#include <QWidget>
-#include <QPushButton>
-
-class Serial;
-class Camera;
 class JeVoisInventor;
 
-class System : public QWidget
+//! A dialog to set program preferences
+class PreferencesDialog : public QDialog
 {
     Q_OBJECT
-  public:
 
-    System(JeVoisInventor * inv, Serial * serial, Camera * cam, bool headless, QWidget * parent = nullptr);
-    virtual ~System();
-    bool isHeadless() const;
-    
-  protected:
+  public:
+    PreferencesDialog(JeVoisInventor * jvinv, QWidget * parent = nullptr);
+
+  private:
     JeVoisInventor * m_inv;
-    Serial * m_serial;
-    Camera * m_cam;
-    QPushButton m_stream;
-    QPushButton m_usbsd;
-    QPushButton m_date;
-    bool m_headless;
+    QCheckBox m_headless;
+    QComboBox m_defmap;
 };

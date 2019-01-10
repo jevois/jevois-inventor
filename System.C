@@ -22,7 +22,7 @@
 #include <QMessageBox>
 
 // ##############################################################################################################
-System::System(JeVoisInventor * inv, Serial * serial, Camera * cam, QWidget * parent) :
+System::System(JeVoisInventor * inv, Serial * serial, Camera * cam, bool headless, QWidget * parent) :
     QWidget(parent),
     m_inv(inv),
     m_serial(serial),
@@ -30,11 +30,12 @@ System::System(JeVoisInventor * inv, Serial * serial, Camera * cam, QWidget * pa
     m_stream(tr("Go Headless")),
     m_usbsd(tr("Enable")),
     m_date(tr("Set Now")),
-    m_headless(false)
+    m_headless(headless)
 {
   QFormLayout * lay = new QFormLayout(this);
   
   // Video streaming button:
+  m_stream.setEnabled(! m_headless); // initial state from preferences
   connect(&m_stream, &QPushButton::clicked, [this]() {
       if (QMessageBox::question(this, tr("Switch to headless mode?"),
          tr("<p>Before you disable video streaming and switch to headless mode, "
@@ -58,6 +59,7 @@ System::System(JeVoisInventor * inv, Serial * serial, Camera * cam, QWidget * pa
   
   // usbsd toggle:
   m_usbsd.setCheckable(true);
+  m_usbsd.setEnabled(! m_headless); // disable usbsd when headless
   connect(&m_usbsd, &QPushButton::toggled, [this](bool checked) {
       if (checked)
       {

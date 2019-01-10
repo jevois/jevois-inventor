@@ -55,7 +55,7 @@ QString VideoMapping::str() const
   QString s; QTextStream ss(&s);
   ss << "OUT: " << ofmt << ' ' << ow << 'x' << oh << " @ " << ofps << "fps CAM: " <<
     cfmt << ' ' << cw << 'x' << ch << " @ " << cfps << "fps MOD: " <<
-    vendor << ' ' << modulename << " (" << (ispython ? "Python" : "C++") << ')';
+    vendor << ':' << modulename << ' ' << (ispython ? "Python" : "C++");
   return s;
 }
 

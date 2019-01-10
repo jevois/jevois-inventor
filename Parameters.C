@@ -126,7 +126,7 @@ void Parameters::build(QStringList const & params)
     header->setMargin(5);
     m_table->addWidget(header, idx, 0, 1, 3);
     ++idx;
-
+    
     // Now insert all the widgets for that category:
     for (auto const & pd : pc.second)
     {
@@ -135,28 +135,28 @@ void Parameters::build(QStringList const & params)
       QString const & descrip = pd.first;
       int defindex = 0; // Used by combobox only
       QString const & vtype = p.valuetype;
-
+      
       bool const is_int = (vtype == "short" || vtype == "int" || vtype == "long int" || vtype == "long long int");
       bool const is_uint = (vtype == "unsigned char" || vtype == "unsigned short" || vtype == "unsigned int" || 
-			    vtype == "unsigned long int" || vtype == "unsigned long long int" || vtype == "size_t");
+                            vtype == "unsigned long int" || vtype == "unsigned long long int" || vtype == "size_t");
       bool const is_real = (vtype == "float" || vtype == "double" || vtype == "long double");
       //bool const is_number = (is_int || is_uint || is_real);
-
+      
       // Parameter name with descriptor and value type as a tooltip:
       QLabel * lbl = new QLabel(p.displayname);
       lbl->setToolTip(descrip + " [" + p.valuetype + ']');
       m_table->addWidget(lbl, idx, 0);
       m_table->setAlignment(lbl, Qt::AlignVCenter);
-
+      
       // Widget with description as tooltip:
       // ----------------------------------------------------------------------
       QWidget * widget;
       if (p.validvalues.startsWith("List:["))
       {
         auto wi = new QComboBox; widget = wi;
-	wi->setFocusPolicy(Qt::StrongFocus); // do not spin the box while mouse wheel scrolling
-	QString vals = p.validvalues.mid(6, p.validvalues.size() - 7);
-
+        wi->setFocusPolicy(Qt::StrongFocus); // do not spin the box while mouse wheel scrolling
+        QString vals = p.validvalues.mid(6, p.validvalues.size() - 7);
+        
         QStringList vv = vals.split('|');
         for (QString const & v : vv)
         {
@@ -166,80 +166,80 @@ void Parameters::build(QStringList const & params)
         }
 
         connect(wi, QOverload<int>::of(&QComboBox::currentIndexChanged),  [this, descrip, idx]() {
-	    if (m_built == false) return; // Prevent crash during destruction of the param table
+            if (m_built == false) return; // Prevent crash during destruction of the param table
             auto ww = dynamic_cast<QComboBox *>(m_table->itemAtPosition(idx, 1)->widget());
             if (ww)
-	    {
+            {
               QString const val = ww->currentText();
               m_serial->
-		setPar(descrip, val,
-		       [this](QStringList const &) { setParOk(); },
-		       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data);} );
-	    }
+                setPar(descrip, val,
+                       [this](QStringList const &) { setParOk(); },
+                       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data);} );
+            }
           });
       }
       // ----------------------------------------------------------------------
       else if (vtype == "unsigned char" ||
-	       (p.validvalues.startsWith("Range:[") && (is_int || is_uint)))
+               (p.validvalues.startsWith("Range:[") && (is_int || is_uint)))
       {
-	// Parse spec of the form: Range:[0.01 ... 1000]
-	QStringList vec = p.validvalues.split(QRegularExpression(R"(\[|\]|\.\.\.)"));
-	int mini = 0, maxi = 255;
-	if (vec.size() == 4) { mini = vec[1].toInt(); maxi = vec[2].toInt(); }
-	else DEBU("ooops "<<descrip<<" vec is:" << vec);
-	
+        // Parse spec of the form: Range:[0.01 ... 1000]
+        QStringList vec = p.validvalues.split(QRegularExpression(R"(\[|\]|\.\.\.)"));
+        int mini = 0, maxi = 255;
+        if (vec.size() == 4) { mini = vec[1].toInt(); maxi = vec[2].toInt(); }
+        else DEBU("ooops "<<descrip<<" vec is:" << vec);
+        
         auto wi = new SpinSlider(mini, maxi, 1, Qt::Horizontal); widget = wi;
-	wi->setFocusPolicy(Qt::StrongFocus); // do not slide while mouse wheel scrolling
-	wi->setValue(p.value.toInt());
-
+        wi->setFocusPolicy(Qt::StrongFocus); // do not slide while mouse wheel scrolling
+        wi->setValue(p.value.toInt());
+        
         connect(wi, &SpinSlider::valueChanged, [this, descrip, idx](int valint) {
-	    if (m_built == false) return; // Prevent crash during destruction of the param table
+            if (m_built == false) return; // Prevent crash during destruction of the param table
             auto ww = dynamic_cast<SpinSlider *>(m_table->itemAtPosition(idx, 1)->widget());
             if (ww)
-	    {
-	      QString const val = QString::number(valint);
+            {
+              QString const val = QString::number(valint);
               m_serial->
-		setPar(descrip, val,
-		       [this](QStringList const &) { setParOk(); },
-		       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data); } );
-	    }
+                setPar(descrip, val,
+                       [this](QStringList const &) { setParOk(); },
+                       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data); } );
+            }
           });
       }
       // ----------------------------------------------------------------------
       else if (vtype == "jevois::Range<unsigned char>")
       {
         auto wi = new SpinRangeSlider(0, 255); widget = wi;
-	wi->setFocusPolicy(Qt::StrongFocus); // do not slide while mouse wheel scrolling
-	int lower = 0, upper = 255;
-	QStringList vec = p.value.split(QRegularExpression(R"(\.\.\.)"));
-	if (vec.size() == 2) { lower = vec[0].toInt(); upper = vec[1].toInt(); }
-	wi->setLowerValue(lower);
-	wi->setUpperValue(upper);
-
+        wi->setFocusPolicy(Qt::StrongFocus); // do not slide while mouse wheel scrolling
+        int lower = 0, upper = 255;
+        QStringList vec = p.value.split(QRegularExpression(R"(\.\.\.)"));
+        if (vec.size() == 2) { lower = vec[0].toInt(); upper = vec[1].toInt(); }
+        wi->setLowerValue(lower);
+        wi->setUpperValue(upper);
+        
         connect(wi, &SpinRangeSlider::lowerValueChanged, [this, descrip, idx](int lower) {
-	    if (m_built == false) return; // Prevent crash during destruction of the param table
+            if (m_built == false) return; // Prevent crash during destruction of the param table
             auto ww = dynamic_cast<SpinRangeSlider *>(m_table->itemAtPosition(idx, 1)->widget());
             if (ww)
-	    {
-	      QString const val = QString::number(lower) + " ... " + QString::number(ww->GetUpperValue());
+            {
+              QString const val = QString::number(lower) + " ... " + QString::number(ww->GetUpperValue());
               m_serial->
-		setPar(descrip, val,
-		       [this](QStringList const &) { setParOk(); },
-		       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data); } );
-	    }
+                setPar(descrip, val,
+                       [this](QStringList const &) { setParOk(); },
+                       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data); } );
+            }
           });
-
+        
         connect(wi, &SpinRangeSlider::upperValueChanged, [this, descrip, idx](int upper) {
-	    if (m_built == false) return; // Prevent crash during destruction of the param table
+            if (m_built == false) return; // Prevent crash during destruction of the param table
             auto ww = dynamic_cast<SpinRangeSlider *>(m_table->itemAtPosition(idx, 1)->widget());
             if (ww)
-	    {
-	      QString const val = QString::number(ww->GetLowerValue()) + " ... " + QString::number(upper);
+            {
+              QString const val = QString::number(ww->GetLowerValue()) + " ... " + QString::number(upper);
               m_serial->
-		setPar(descrip, val,
-		       [this](QStringList const &) { setParOk(); },
-		       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data); } );
-	    }
+                setPar(descrip, val,
+                       [this](QStringList const &) { setParOk(); },
+                       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data); } );
+            }
           });
       }
       // ----------------------------------------------------------------------
@@ -247,20 +247,20 @@ void Parameters::build(QStringList const & params)
       {
         auto wi = new QCheckBox; widget = wi;
         wi->setCheckState(p.value == "true" ? Qt::Checked : Qt::Unchecked);
-
+        
         connect(wi, &QCheckBox::stateChanged, [this, descrip, idx](int value) {
-	    if (m_built == false) return; // Prevent crash during destruction of the param table
+            if (m_built == false) return; // Prevent crash during destruction of the param table
             auto ww = dynamic_cast<QCheckBox *>(m_table->itemAtPosition(idx, 1)->widget());
             if (ww)
-	    {
-	      QString val = (value == Qt::Checked ? "true" : "false");
+            {
+              QString val = (value == Qt::Checked ? "true" : "false");
               m_serial->
-		setPar(descrip, val,
-		       [this](QStringList const &) { setParOk(); },
-		       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data); } );
-	    }
-	  });
-
+                setPar(descrip, val,
+                       [this](QStringList const &) { setParOk(); },
+                       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data); } );
+            }
+          });
+        
       }
       // ----------------------------------------------------------------------
       else
@@ -268,65 +268,65 @@ void Parameters::build(QStringList const & params)
         // User will type in some value:
         auto wi = new QLineEdit; widget = wi;
         wi->setText(p.value);
-	if (is_int || is_uint) wi->setValidator(new QIntValidator(wi));
-	else if (is_real) wi->setValidator(new QDoubleValidator(wi));
-
+        if (is_int || is_uint) wi->setValidator(new QIntValidator(wi));
+        else if (is_real) wi->setValidator(new QDoubleValidator(wi));
+        
         connect(wi, &QLineEdit::editingFinished, [this, descrip, idx]() {
-	    if (m_built == false) return; // Prevent crash during destruction of the param table
+            if (m_built == false) return; // Prevent crash during destruction of the param table
             auto ww = dynamic_cast<QLineEdit *>(m_table->itemAtPosition(idx, 1)->widget());
             if (ww)
-	    {
-	      if (ww->isModified() == false) return; // do not setpar on no-op edits
+            {
+              if (ww->isModified() == false) return; // do not setpar on no-op edits
               QString const val = ww->text();
               m_serial->
-		setPar(descrip, val,
-		       [this](QStringList const &) { setParOk(); },
-		       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data); } );
-	      ww->setModified(false); // Avoid double hit when we remove focus
-	      setFocus(); // steal the focus from the param so we know editing is over
+                setPar(descrip, val,
+                       [this](QStringList const &) { setParOk(); },
+                       [this, descrip, val](QStringList const & data) { setParErr(descrip, val, data); } );
+              ww->setModified(false); // Avoid double hit when we remove focus
+              setFocus(); // steal the focus from the param so we know editing is over
             }
           });
       }
-
+      
       // Finalize and insert the widget into the table:
       widget->setToolTip(splitToolTip(p.description));
       if (p.frozen) widget->setDisabled(true);
       m_table->addWidget(widget, idx, 1);
-
+      
       // A reset button:
       auto button = new QPushButton("Reset");
       connect(button, &QPushButton::clicked,
               [this, idx, defval, defindex]()
               {
-		if (m_built == false) return; // Prevent crash during destruction of the param table
-
+                if (m_built == false) return; // Prevent crash during destruction of the param table
+                
                 auto le = dynamic_cast<QLineEdit *>(m_table->itemAtPosition(idx, 1)->widget());
                 if (le) { le->setText(defval); return; } // will also update the hardware
-
+                
                 auto cb = dynamic_cast<QComboBox *>(m_table->itemAtPosition(idx, 1)->widget());
                 if (cb) { cb->setCurrentIndex(defindex); return; } // will also update the hardware
-
+                
                 auto ck = dynamic_cast<QCheckBox *>(m_table->itemAtPosition(idx, 1)->widget());
                 if (ck) { ck->setCheckState(defval == "true" ? Qt::Checked : Qt::Unchecked); return; }
-
+                
                 auto sl = dynamic_cast<SpinSlider *>(m_table->itemAtPosition(idx, 1)->widget());
                 if (sl) { sl->setValue(defval.toInt()); return; }
-
+                
                 auto rs = dynamic_cast<SpinRangeSlider *>(m_table->itemAtPosition(idx, 1)->widget());
                 if (rs) {
-		  int lower = 0, upper = 255;
-		  QStringList vec = defval.split(QRegularExpression(R"(\.\.\.)"));
-		  if (vec.size() == 2) { lower = vec[0].toInt(); upper = vec[1].toInt(); }
-		  rs->setLowerValue(lower);
-		  rs->setUpperValue(upper);
-		  return;
-		}
+                  int lower = 0, upper = 255;
+                  QStringList vec = defval.split(QRegularExpression(R"(\.\.\.)"));
+                  if (vec.size() == 2) { lower = vec[0].toInt(); upper = vec[1].toInt(); }
+                  rs->setLowerValue(lower);
+                  rs->setUpperValue(upper);
+                  return;
+                }
                 
               });
       
       if (p.frozen) button->setDisabled(true);
       m_table->addWidget(button, idx, 2);
-
+      
       // Done with this parameter:
       ++idx;
     }

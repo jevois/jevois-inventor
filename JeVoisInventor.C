@@ -33,11 +33,13 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QProcess>
+#include <QSettings>
 
 #include "Utils.H"
 #include "PythonEdit.H"
 #include "CxxEdit.H"
 #include "ParamInfo.H"
+#include "PreferencesDialog.H"
 
 #include <thread>
 #include <cmath> // std::abs is ambiguous on macOS?
@@ -67,13 +69,13 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
     m_camcontrols(&m_serial),
     m_cfg(&m_serial),
     m_src(&m_serial, "boo", false, defcode, new CxxEdit(&m_serial), Editor::SaveAction::Reload, true),
-    m_system(this, &m_serial, &m_camera),
+    m_system(this, &m_serial, &m_camera, QSettings().value(SETTINGS_HEADLESS, false).toBool()),
     m_netmgr(),
     m_setMappingInProgress(false),
     m_filemenu(nullptr),
     m_modmenu(nullptr),
     m_vm(),
-    m_currmapping(defmap),
+    m_currmapping(QSettings().value(SETTINGS_DEFMAPPING, defmap).toString()),
     m_jvmajor(1),
     m_jvminor(0),
     m_jvpatch(0),
@@ -86,7 +88,7 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
   
   // put some buttons and stuff, then:
   //addToolBar(m_toolbar);
-  
+
   // Setup our timer that will be in charge of detecting the camera and serial:
   m_conntimer.setSingleShot(true);
   connect(&m_conntimer, &QTimer::timeout, this, &JeVoisInventor::tryconnect);
@@ -139,6 +141,9 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
                          "<b>JeVois Inventor " JVINV_VERSION_STRING "</b><br> <br>Copyright (C) 2018 by Laurent Itti, "
                          "the University of Southern California (USC), and iLab at USC.<br> <br>See "
                          "<a href=http://jevois.org>http://jevois.org</a> for information about this project."); });
+
+  m_filemenu->addAction(tr("&Preferences"), [this]() { editPreferences(); });
+
   m_filemenu->addSeparator();
   
   m_filemenu->addAction(tr("JeVois &Home Page"),
@@ -970,11 +975,15 @@ void JeVoisInventor::buildModMenu(QStringList const & mappings)
 
     // Launch our default module, unless user turned off streaming in the system tab:
     if (m_system.isHeadless() == false &&
-        vm.vendor == "JeVois" && vm.modulename == "DemoSaliency" && vm.ow == 640 && vm.oh == 300)
+        vm.vendor == m_currmapping.vendor &&
+        vm.modulename == m_currmapping.modulename &&
+        vm.ow == m_currmapping.ow &&
+        vm.oh == m_currmapping.oh)
     { setMapping(vm); started = true; }
   }
 
-  // If we did not start DemoSaliency, just start the first available module, unless user turned off streaming:
+  // If we did not start our default module per preferences (maybe it was deleted), just start the first available
+  // module, unless user turned off streaming:
   if (started == false && m_vm.isEmpty() == false && m_system.isHeadless() == false) setMapping(0);
 
   // If user disabled streaming, we still want to get some info about the module that is running:
@@ -1311,4 +1320,11 @@ void JeVoisInventor::rebootJeVois()
   // Do not call enableUI(false) here as it disables the frame timeout. Just a quick disable:
   m_tab.setEnabled(false);
   if (m_modmenu) m_modmenu->setEnabled(false);
+}
+
+// ##############################################################################################################
+void JeVoisInventor::editPreferences()
+{
+  PreferencesDialog * pd = new PreferencesDialog(this);
+  pd->show();
 }

@@ -43,3 +43,12 @@
 #define JVINV_TAB 4
 
 #define JEVOIS_VERSION_URL "http://jevois.org/version"
+
+//! Setting:String: default directory for load/save of local code
+#define SETTINGS_LOCAL_DIR "default_local_dir"
+
+//! Setting:bool: start in headless mode
+#define SETTINGS_HEADLESS "headless"
+
+//! Setting:String: default video mapping to load on startup (when not headless)
+#define SETTINGS_DEFMAPPING "defmapping"

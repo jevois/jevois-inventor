@@ -291,7 +291,7 @@ void Editor::loadFileLocal(bool noask)
     QString defloc = locs.isEmpty() ? "" : locs[0];
 
     QSettings settings;
-    QString loc = settings.value("default_local_dir", defloc).toString();
+    QString loc = settings.value(SETTINGS_LOCAL_DIR, defloc).toString();
 
     QString const localfname = QFileDialog::getOpenFileName(this, "Select file to load", loc);
 
@@ -304,7 +304,7 @@ void Editor::loadFileLocal(bool noask)
       // Remember the directory:
       QStringList dir = QDir::cleanPath(localfname).split('/');
       dir.pop_back();
-      settings.setValue("default_local_dir", dir.join('/'));
+      settings.setValue(SETTINGS_LOCAL_DIR, dir.join('/'));
     }
   }
 }
@@ -324,7 +324,7 @@ void Editor::saveFileLocal(bool noask)
   defloc = QDir::cleanPath(defloc); // convert to forward slash
   
   QSettings settings;
-  QString loc = settings.value("default_local_dir", defloc).toString();
+  QString loc = settings.value(SETTINGS_LOCAL_DIR, defloc).toString();
 
   QStringList const fn = m_fname.split('/');
   loc += '/' + fn.back();
@@ -346,7 +346,7 @@ void Editor::saveFileLocal(bool noask)
     // Remember the directory:
     QStringList dir = QDir::cleanPath(localfname).split('/');
     dir.pop_back();
-    settings.setValue("default_local_dir", dir.join('/'));
+    settings.setValue(SETTINGS_LOCAL_DIR, dir.join('/'));
   }
 }
 

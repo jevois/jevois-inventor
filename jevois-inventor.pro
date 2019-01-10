@@ -50,7 +50,8 @@ SOURCES += \
         System.C \
         RangeSlider.C \
         SpinSlider.C \
-        SpinRangeSlider.C
+        SpinRangeSlider.C \
+        PreferencesDialog.C
 
         
 #        VideoWidget.C
@@ -81,7 +82,8 @@ HEADERS += \
         Config.H \
         RangeSlider.H \
         SpinSlider.H \
-        SpinRangeSlider.H
+        SpinRangeSlider.H \
+        PreferencesDialog.H
         
 #        VideoWidget.H
 
