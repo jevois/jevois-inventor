@@ -164,15 +164,15 @@ bool Camera::detect()
     if (ok && !item.isEmpty())
     {
       for (QCameraInfo const & cameraInfo : cameras)
-	if (item.startsWith(cameraInfo.description()))
-	{
-	  if (createCamera(cameraInfo))
-	  {
-	    m_caminfo = cameraInfo;
-	    return true;
-	  }
-	  else break;
-	}
+        if (item.startsWith(cameraInfo.description()))
+        {
+          if (createCamera(cameraInfo))
+          {
+            m_caminfo = cameraInfo;
+            return true;
+          }
+          else break;
+        }
     }
   }
 #endif
@@ -188,7 +188,6 @@ bool Camera::createCamera(QCameraInfo const & caminfo)
 {
   // Instantiate the camera:
   m_camera.reset(new QCamera(caminfo));
-  //m_camera->load(); // do not load as it also starts...
       
   // Get its error messages:
   connect(m_camera.data(), QOverload<QCamera::Error>::of(&QCamera::error), this, &Camera::camerror);
@@ -258,7 +257,7 @@ void Camera::stop()
   if (m_thread)
   {
     m_thread->quit();
-    while (m_thread->isRunning()) ; ////qApp->processEvents();
+    while (m_thread->isRunning()) ;
     delete m_thread;
     m_thread = nullptr;
   }
@@ -276,7 +275,6 @@ void Camera::camerror()
 #endif
 
   if (m_camera) DEBU("Camera Error: " << m_camera->errorString());
-  //QMessageBox::warning(this, tr("Camera Error"), m_camera->errorString());
   emit error();
 }
 
@@ -301,9 +299,7 @@ void Camera::cameraFrame(QVideoFrame const & frame)
 {
   Q_UNUSED(frame);
 
-  // FIXME: compute FPS here
-  
-  if (m_signalframe) { QTimer::singleShot(0, m_inventor, &JeVoisInventor::newCameraFrame); /*m_signalframe = false;*/ }
+  if (m_signalframe) { QTimer::singleShot(0, m_inventor, &JeVoisInventor::newCameraFrame); }
 
   if (m_camera && m_camera->status() == QCamera::ActiveStatus) m_tout.start(3456);
 }

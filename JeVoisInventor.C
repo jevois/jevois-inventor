@@ -138,8 +138,8 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
   
   m_filemenu->addAction(tr("&About"), [this]() {
       QMessageBox::about(this, tr("About JeVois Inventor"),
-                         "<b>JeVois Inventor " JVINV_VERSION_STRING "</b><br> <br>Copyright (C) 2018 by Laurent Itti, "
-                         "the University of Southern California (USC), and iLab at USC.<br> <br>See "
+                         "<b>JeVois Inventor " JVINV_VERSION_STRING "</b><br> <br>Copyright (C) 2018-2020 by Laurent "
+                         "Itti, the University of Southern California (USC), and iLab at USC.<br> <br>See "
                          "<a href=http://jevois.org>http://jevois.org</a> for information about this project."); });
 
   m_filemenu->addAction(tr("&Preferences"), [this]() { editPreferences(); });
@@ -173,14 +173,13 @@ JeVoisInventor::JeVoisInventor(QWidget * parent) :
   // Start disabled, tryconnect() will enable:
   enableUI(false);
   
-  // Show welcome message for this beta:
+  // Show welcome message:
   QMessageBox::
-    about(this, tr("Welcome to JeVois Inventor Beta!"),
-          "Welcome to JeVois Inventor beta " JVINV_VERSION_STRING "<br> <br>Use the menubar to select and create "
+    about(this, tr("Welcome to JeVois Inventor!"),
+          "Welcome to JeVois Inventor " JVINV_VERSION_STRING "<br> <br>Use the menubar to select and create "
           "machine vision modules. <br> <br>Please help us improve this software by reporting bugs to "
           "<a href=\"mailto:jevois.org@gmail.com\">jevois.org@gmail.com</a><br> <br>"
           "Current limitations:"
-          "<ul><li>Can only display YUYV video</li>"
           "<li>Can only edit/create Python code, C++ editing and compiling not yet supported.</li>"
           "<li>No documentation parser yet, newly created modules will not have a proper documentation page.</li>"
           "</ul>"
@@ -966,8 +965,10 @@ void JeVoisInventor::buildModMenu(QStringList const & mappings)
       a->setFont(f);
     }
     
-    // FIXME: for now, disable modes which do not output YUYV:
-    if (vm.ofmt != "YUYV") m_modmenu->actions().back()->setEnabled(false);
+    // Qt QCamera cannot capture Y800/GREY or BAYER. In such case, patch the videomapping, JeVois core running
+    // on the camera will do a software conversion to YUYV. Otherwise, disable this module:
+    if (vm.ofmt == "BAYER" || vm.ofmt == "GREY") m_vm[num].ofmt = "YUYV";
+    else if (vm.ofmt != "YUYV") m_modmenu->actions().back()->setEnabled(false);
 
     // Grey out the flipped 640x480 JeVoisIntro version as it is confusing:
     if (vm.vendor == "JeVois" && vm.modulename == "JeVoisIntro" && vm.ow == 640 && vm.oh == 480)

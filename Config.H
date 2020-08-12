@@ -24,8 +24,8 @@
 #define INFO(x) do { qCritical() << __FILE__ << "::" << __FUNCTION__ << ":" << x; } while (0)
 
 //! Our version number
-#define JVINV_VERSION_MAJOR 0
-#define JVINV_VERSION_MINOR 5
+#define JVINV_VERSION_MAJOR 1
+#define JVINV_VERSION_MINOR 0
 #define JVINV_VERSION_PATCH 0
 
 //! Macro to stringify a value
