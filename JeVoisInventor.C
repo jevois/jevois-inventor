@@ -974,6 +974,15 @@ void JeVoisInventor::buildModMenu(QStringList const & mappings)
     if (vm.vendor == "JeVois" && vm.modulename == "JeVoisIntro" && vm.ow == 640 && vm.oh == 480)
       m_modmenu->actions().back()->setEnabled(false);
 
+#ifdef Q_OS_MACOS
+    // MacOS cannot display some resolutions...
+    if ( (vm.ow == 320 && vm.oh == 960) ||
+         (vm.ow == 176 && vm.oh == 288) ||
+         (vm.ow == 160 && vm.oh == 495) ||
+         (vm.ow == 128 && vm.oh == 117) )
+      m_modmenu->actions().back()->setEnabled(false);      
+#endif
+        
     // Launch our default module, unless user turned off streaming in the system tab:
     if (m_system.isHeadless() == false &&
         vm.vendor == m_currmapping.vendor &&
@@ -1079,6 +1088,12 @@ void JeVoisInventor::updateAfterSetMapping(QCamera::Status status)
     
   default: break;
   }
+
+  // QVideoProbe does not seem to work anymore on MacOS under Qt 5.15.0. No videoFrameProbed signal is emitted.
+  // So here just call newCameraFrame once so we can get our module info data. Frames/s timer will not work on MacOS.
+#ifdef Q_OS_MACOS
+  QTimer::singleShot(200, this, &JeVoisInventor::newCameraFrame);
+#endif
 }
 
 // ##############################################################################################################
